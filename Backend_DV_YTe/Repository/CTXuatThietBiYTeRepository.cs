@@ -93,7 +93,7 @@ namespace Backend_DV_YTe.Repository
                     document.Open();
 
                     // Tạo bảng
-                    PdfPTable table = new PdfPTable(4); // 4 cột trong bảng
+                    PdfPTable table = new PdfPTable(3); // 4 cột trong bảng
 
                     // Thiết lập font cho tiêu đề cột
                     Font columnHeaderFont = new Font(baseFont, 12, Font.BOLD);
@@ -102,7 +102,7 @@ namespace Backend_DV_YTe.Repository
                     table.AddCell(new PdfPCell(new Phrase("Mã thiết bị", columnHeaderFont)));
                     table.AddCell(new PdfPCell(new Phrase("Mã xuất thiết bị", columnHeaderFont)));
                     table.AddCell(new PdfPCell(new Phrase("Số lượng", columnHeaderFont)));
-                    table.AddCell(new PdfPCell(new Phrase("Ngày tạo", columnHeaderFont)));
+                    //table.AddCell(new PdfPCell(new Phrase("Ngày tạo", columnHeaderFont)));
 
                     if (danhSachXuatThietBi is null || danhSachXuatThietBi.Count == 0)
                     {
@@ -115,7 +115,7 @@ namespace Backend_DV_YTe.Repository
                         table.AddCell(new PdfPCell(new Phrase(entity.MaThietBiYTe.ToString())));
                         table.AddCell(new PdfPCell(new Phrase(entity.MaXuatThietBiYTe.ToString())));
                         table.AddCell(new PdfPCell(new Phrase(entity.soLuong.ToString())));
-                        table.AddCell(new PdfPCell(new Phrase(entity.ngayTao.ToString())));
+                        //table.AddCell(new PdfPCell(new Phrase(entity.ngayTao.ToString())));
                     }
 
                     // Thêm bảng vào tệp tin PDF
@@ -142,7 +142,7 @@ namespace Backend_DV_YTe.Repository
         {
 
             var CTXuatThietBiYTes = _context.cTXuatThietBiYTeEntities
-                .Where(c => c.ngayTao >= startTime.Date && c.ngayTao <= endTime.Date)
+                .Where(c => c.CreateTimes >= startTime.Date && c.CreateTimes <= endTime.Date)
                 .ToList();
 
             var vaccineReport = new Dictionary<int, int>();

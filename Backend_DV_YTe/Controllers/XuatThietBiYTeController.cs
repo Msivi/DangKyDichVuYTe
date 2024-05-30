@@ -94,7 +94,7 @@ namespace Backend_DV_YTe.Controllers
                 int userId = BitConverter.ToInt32(userIdBytes, 0);
 
                 var mapEntity = _mapper.Map<XuatThietBiYTeEntity>(model);
-                mapEntity.MaNhanVien = userId;
+                mapEntity.CreateBy = userId;
                 var result = await _XuatThietBiYTeRepository.CreateXuatThietBiYTe(mapEntity);
 
                 return Ok(new BaseResponseModel<string>(
@@ -123,7 +123,7 @@ namespace Backend_DV_YTe.Controllers
                 int userId = BitConverter.ToInt32(userIdBytes, 0);
 
                 var mapEntity = _mapper.Map<XuatThietBiYTeEntity>(entity);
-                mapEntity.MaNhanVien = userId;
+                mapEntity.CreateBy = userId;
                 await _XuatThietBiYTeRepository.UpdateXuatThietBiYTe(id, mapEntity);
 
                 return Ok(new BaseResponseModel<string>(

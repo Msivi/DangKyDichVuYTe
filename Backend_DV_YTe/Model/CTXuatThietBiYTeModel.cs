@@ -10,6 +10,6 @@ namespace Backend_DV_YTe.Model
         public int MaXuatThietBiYTe { get; set; }
         public int MaThietBiYTe { get; set; }
         public int soLuong { get; set; }
-        public DateTime ngayTao { get; set; }
+        //public DateTime ngayTao { get; set; }
     }
 }

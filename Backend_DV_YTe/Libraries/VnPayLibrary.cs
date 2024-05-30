@@ -25,31 +25,21 @@ namespace Backend_DV_YTe.Libraries
                     vnPay.AddResponseData(key, value);
                 }
             }
-
-            //var orderId = Convert.ToInt64(vnPay.GetResponseData("vnp_TxnRef"));
-            //var vnPayTranId = Convert.ToInt64(vnPay.GetResponseData("vnp_TransactionNo"));
-            //var vnpResponseCode = vnPay.GetResponseData("vnp_ResponseCode");
             var orderId = (vnPay.GetResponseData("vnp_TxnRef")).ToString();
-            //var vnPayTranId = Convert.ToInt64(vnPay.GetResponseData("vnp_TransactionNo"));
+            
             var vnPayTranIdStr = vnPay.GetResponseData("vnp_TransactionNo").ToString();
             var vnPayTranId = !string.IsNullOrEmpty(vnPayTranIdStr) ? Convert.ToInt64(vnPayTranIdStr) : 0;
             var vnpResponseCode = vnPay.GetResponseData("vnp_ResponseCode");
-            var vnpSecureHash =
-                collection.FirstOrDefault(k => k.Key == "vnp_SecureHash").Value; //hash của dữ liệu trả về
+            var vnpSecureHash = collection.FirstOrDefault(k => k.Key == "vnp_SecureHash").Value; //hash của dữ liệu trả về
             var orderInfo = vnPay.GetResponseData("vnp_OrderInfo");
 
-            var checkSignature =
-                vnPay.ValidateSignature(vnpSecureHash, hashSecret); //check Signature
+            var checkSignature = vnPay.ValidateSignature(vnpSecureHash, hashSecret); //check Signature
 
-            if (!checkSignature)
-                return new PaymentResponseModel()
-                {
-                    Success = false
-                };
+            bool success = checkSignature && vnpResponseCode == "00"; // Kiểm tra chữ ký và mã phản hồi thành công
 
             return new PaymentResponseModel()
             {
-                Success = true,
+                Success = success,
                 PaymentMethod = "VnPay",
                 OrderDescription = orderInfo,
                 OrderId = orderId.ToString(),

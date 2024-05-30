@@ -129,8 +129,8 @@ namespace Backend_DV_YTe.Repository
                         Gia = dv.gia,
                         MoTa = dv.moTa,
                         TenChuyenKhoa = dv.ChuyenKhoa.tenChuyenKhoa,
-                        MaBacSi= dv.ChuyenKhoa.CTBacSi.FirstOrDefault().BacSi.Id,
-                        TenBacSi = dv.ChuyenKhoa.CTBacSi.FirstOrDefault().BacSi.tenBacSi
+                       HinhAnh=dv.hinhAnh,
+                         
                     })
                     .ToListAsync();
 

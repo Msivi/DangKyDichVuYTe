@@ -7,9 +7,9 @@ namespace Backend_DV_YTe.Entity
     {
         public DateTime ngayTao { get; set; }
 
-        [ForeignKey("NhanVien")]
-        public int MaNhanVien { get; set; }
-        public virtual NhanVienEntity NhanVien { get; set; }
+        //[ForeignKey("NhanVien")]
+        //public int MaNhanVien { get; set; }
+        //public virtual NhanVienEntity NhanVien { get; set; }
 
         public virtual ICollection<CTXuatThuocEntity> CTXuatThuoc { get; set; }
 

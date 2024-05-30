@@ -144,7 +144,7 @@ namespace Backend_DV_YTe.Repository
         {
 
             var CTNhapThietBiYTe = _context.cTNhapThietBiYTeEntities
-                .Where(c => c.ngayTao >= startTime && c.ngayTao <= endTime)
+                .Where(c => c.CreateTimes >= startTime && c.CreateTimes <= endTime)
                 .ToList();
 
             // Tạo một từ điển để lưu trữ số lượng vaccine đã xuất của từng MaThuoc

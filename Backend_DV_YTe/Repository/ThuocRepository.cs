@@ -24,6 +24,10 @@ namespace Backend_DV_YTe.Repository
             var existingThuoc = await _context.thuocEntities
               .FirstOrDefaultAsync(c => c.Id == entity.Id && (c.DeletedTime == null || c.DeletedTime != null));
 
+            if (entity.ngayHetHan<= entity.ngaySanXuat)
+            {
+                throw new Exception(message: "Ngày hết hạng phải lớn hơn ngày sản xuất!");
+            }
             if (existingThuoc != null)
             {
                 throw new Exception(message: "Id is already exist!");

@@ -13,13 +13,13 @@ namespace Backend_DV_YTe.Entity
         public string CMND { get; set; }
         public string Role { get; set; }
 
-        public virtual ICollection<CTMuaThuocEntity> CTMuaThuoc { get; set; }
+        //public virtual ICollection<CTMuaThuocEntity> CTMuaThuoc { get; set; }
         //public virtual ICollection<DanhGiaEntity> DanhGia { get; set; }
         public virtual ICollection<KetQuaDichVuEntity> KetQuaDV { get; set; }
         public virtual ICollection<NhapThietBiYTeEntity> NhapThietBiYTe { get; set; }
-        public virtual ICollection<XuatThietBiYTeEntity> XuatThietBiYTe { get; set; }
+        //public virtual ICollection<XuatThietBiYTeEntity> XuatThietBiYTe { get; set; }
         public virtual ICollection<NhapThuocEntity> NhapThuoc { get; set; }
-        public virtual ICollection<XuatThuocEntity> XuatThuoc { get; set; }
+        //public virtual ICollection<XuatThuocEntity> XuatThuoc { get; set; }
 
 
 

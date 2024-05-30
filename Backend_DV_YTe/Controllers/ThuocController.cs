@@ -13,7 +13,7 @@ namespace Backend_DV_YTe.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "QuanLy")]
+    
     public class ThuocController : ControllerBase
     {
         private readonly IThuocRepository _thuocRepository;
@@ -64,6 +64,7 @@ namespace Backend_DV_YTe.Controllers
                 return BadRequest(result);
             }
         }
+
         [HttpGet]
         [Route("/api/[controller]/get-ct-xuat-thuoc-by-loai-pdf")]
         public async Task< IActionResult> DownloadPdfFile(int maLoaiThuoc)
@@ -127,7 +128,7 @@ namespace Backend_DV_YTe.Controllers
                 return BadRequest(result);
             }
         }
-
+        [Authorize(Roles = "QuanLy")]
         [HttpPost]
         [Route("/api/[controller]/create-thuoc")]
         public async Task<ActionResult<string>> CreateThuoc(ThuocModel model)
@@ -156,6 +157,7 @@ namespace Backend_DV_YTe.Controllers
                 return BadRequest(result);
             }
         }
+        [Authorize(Roles = "QuanLy")]
         [HttpPut]
         [Route("/api/[controller]/update-thuoc")]
         public async Task<ActionResult> UpdateThuoc(int id, ThuocModel entity)
@@ -183,6 +185,7 @@ namespace Backend_DV_YTe.Controllers
                     message: ex.Message));
             }
         }
+        [Authorize(Roles = "QuanLy")]
         [HttpDelete]
         [Route("/api/[controller]/delete-thuoc")]
         public async Task<ActionResult<ThuocEntity>> DeleteThuoc(int keyId)

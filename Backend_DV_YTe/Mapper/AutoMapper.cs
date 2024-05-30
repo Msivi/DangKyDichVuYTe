@@ -29,6 +29,8 @@
                 c.AddProfile(new DanhGiaProfile());
                 c.AddProfile(new ChuyenKhoaProfile());
                 c.AddProfile(new CTBacSiProfile());
+                c.AddProfile(new CTMuaThuocProfile());
+                c.AddProfile(new CTMuaThietBiYTeProfile());
             });
             return services;
         }

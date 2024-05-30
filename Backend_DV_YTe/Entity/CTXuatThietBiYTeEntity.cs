@@ -19,6 +19,6 @@ namespace Backend_DV_YTe.Entity
         public virtual ThietBiYTeEntity ThietBiYTe { get; set; }
 
         public int soLuong { get; set; }
-        public DateTime ngayTao { get; set; }
+        //public DateTime ngayTao { get; set; }
     }
 }

@@ -68,6 +68,9 @@ namespace Backend_DV_YTe.Migrations
                     b.Property<int?>("CreateBy")
                         .HasColumnType("int");
 
+                    b.Property<DateTime?>("CreateTimes")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTimeOffset?>("DeletedTime")
                         .HasColumnType("datetimeoffset");
 
@@ -90,6 +93,9 @@ namespace Backend_DV_YTe.Migrations
 
                     b.Property<int?>("CreateBy")
                         .HasColumnType("int");
+
+                    b.Property<DateTime?>("CreateTimes")
+                        .HasColumnType("datetime2");
 
                     b.Property<DateTimeOffset?>("DeletedTime")
                         .HasColumnType("datetimeoffset");
@@ -123,11 +129,11 @@ namespace Backend_DV_YTe.Migrations
                     b.Property<int?>("CreateBy")
                         .HasColumnType("int");
 
+                    b.Property<DateTime?>("CreateTimes")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTimeOffset?>("DeletedTime")
                         .HasColumnType("datetimeoffset");
-
-                    b.Property<int?>("NhanVienEntityId")
-                        .HasColumnType("int");
 
                     b.Property<double>("donGia")
                         .HasColumnType("float");
@@ -141,8 +147,6 @@ namespace Backend_DV_YTe.Migrations
                     b.HasKey("MaThuoc", "MaHoaDon");
 
                     b.HasIndex("MaHoaDon");
-
-                    b.HasIndex("NhanVienEntityId");
 
                     b.ToTable("CTMuaThuoc");
                 });
@@ -160,11 +164,11 @@ namespace Backend_DV_YTe.Migrations
                     b.Property<int?>("CreateBy")
                         .HasColumnType("int");
 
+                    b.Property<DateTime?>("CreateTimes")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTimeOffset?>("DeletedTime")
                         .HasColumnType("datetimeoffset");
-
-                    b.Property<DateTime>("ngayTao")
-                        .HasColumnType("datetime2");
 
                     b.Property<int>("soLuong")
                         .HasColumnType("int");
@@ -189,11 +193,11 @@ namespace Backend_DV_YTe.Migrations
                     b.Property<int?>("CreateBy")
                         .HasColumnType("int");
 
+                    b.Property<DateTime?>("CreateTimes")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTimeOffset?>("DeletedTime")
                         .HasColumnType("datetimeoffset");
-
-                    b.Property<DateTime>("ngayTao")
-                        .HasColumnType("datetime2");
 
                     b.Property<int>("soLuong")
                         .HasColumnType("int");
@@ -218,11 +222,11 @@ namespace Backend_DV_YTe.Migrations
                     b.Property<int?>("CreateBy")
                         .HasColumnType("int");
 
+                    b.Property<DateTime?>("CreateTimes")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTimeOffset?>("DeletedTime")
                         .HasColumnType("datetimeoffset");
-
-                    b.Property<DateTime>("ngayTao")
-                        .HasColumnType("datetime2");
 
                     b.Property<int>("soLuong")
                         .HasColumnType("int");
@@ -247,11 +251,11 @@ namespace Backend_DV_YTe.Migrations
                     b.Property<int?>("CreateBy")
                         .HasColumnType("int");
 
+                    b.Property<DateTime?>("CreateTimes")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTimeOffset?>("DeletedTime")
                         .HasColumnType("datetimeoffset");
-
-                    b.Property<DateTime>("ngayTao")
-                        .HasColumnType("datetime2");
 
                     b.Property<int>("soLuong")
                         .HasColumnType("int");
@@ -937,15 +941,10 @@ namespace Backend_DV_YTe.Migrations
                     b.Property<DateTimeOffset?>("DeletedTime")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<int>("MaNhanVien")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("ngayTao")
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("MaNhanVien");
 
                     b.ToTable("XuatThietBiYTe");
                 });
@@ -967,15 +966,10 @@ namespace Backend_DV_YTe.Migrations
                     b.Property<DateTimeOffset?>("DeletedTime")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<int>("MaNhanVien")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("ngayTao")
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("MaNhanVien");
 
                     b.ToTable("XuatThuoc");
                 });
@@ -1031,10 +1025,6 @@ namespace Backend_DV_YTe.Migrations
                         .HasForeignKey("MaThuoc")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("Backend_DV_YTe.Entity.NhanVienEntity", null)
-                        .WithMany("CTMuaThuoc")
-                        .HasForeignKey("NhanVienEntityId");
 
                     b.Navigation("HoaDon");
 
@@ -1273,28 +1263,6 @@ namespace Backend_DV_YTe.Migrations
                     b.Navigation("LoaiThuoc");
                 });
 
-            modelBuilder.Entity("Backend_DV_YTe.Entity.XuatThietBiYTeEntity", b =>
-                {
-                    b.HasOne("Backend_DV_YTe.Entity.NhanVienEntity", "NhanVien")
-                        .WithMany("XuatThietBiYTe")
-                        .HasForeignKey("MaNhanVien")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("NhanVien");
-                });
-
-            modelBuilder.Entity("Backend_DV_YTe.Entity.XuatThuocEntity", b =>
-                {
-                    b.HasOne("Backend_DV_YTe.Entity.NhanVienEntity", "NhanVien")
-                        .WithMany("XuatThuoc")
-                        .HasForeignKey("MaNhanVien")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("NhanVien");
-                });
-
             modelBuilder.Entity("Backend_DV_YTe.Entity.BacSiEntity", b =>
                 {
                     b.Navigation("CTBacSi");
@@ -1362,17 +1330,11 @@ namespace Backend_DV_YTe.Migrations
 
             modelBuilder.Entity("Backend_DV_YTe.Entity.NhanVienEntity", b =>
                 {
-                    b.Navigation("CTMuaThuoc");
-
                     b.Navigation("KetQuaDV");
 
                     b.Navigation("NhapThietBiYTe");
 
                     b.Navigation("NhapThuoc");
-
-                    b.Navigation("XuatThietBiYTe");
-
-                    b.Navigation("XuatThuoc");
                 });
 
             modelBuilder.Entity("Backend_DV_YTe.Entity.NhapThietBiYTeEntity", b =>

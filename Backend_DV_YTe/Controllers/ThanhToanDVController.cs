@@ -22,12 +22,12 @@ namespace Backend_DV_YTe.Controllers
 
         [HttpPost]
         [Route("/api/[controller]/thanh-toan-by-id")]
-        public IActionResult CreatePaymentUrl(int maLichHen)
+        public  IActionResult CreatePaymentUrl(int maLichHen)
         {
             try
             {
-                var url = _vnPayService.CreatePaymentUrl(maLichHen, HttpContext);
-
+                var url =  _vnPayService.CreatePaymentUrl(maLichHen, HttpContext);
+                 
                 //return RedirectPermanent(url);
                 // Hiển thị đường dẫn URL trong phản hồi
                 return Ok(new { Url = url });
@@ -44,11 +44,13 @@ namespace Backend_DV_YTe.Controllers
 
         [HttpPost]
         [Route("/api/[controller]/luu-thanh-toan")]
-        public IActionResult SavePaymetData()
+        public IActionResult SavePaymetData(PaymentResponseModel t)
         {
             try
             {
-                var url = _vnPayService.SavePaymentData(Request.Query);
+
+
+                var url = _vnPayService.SavePaymentData(t);
 
                 //return RedirectPermanent(url);
                 // Hiển thị đường dẫn URL trong phản hồi
@@ -68,7 +70,7 @@ namespace Backend_DV_YTe.Controllers
         public IActionResult PaymentCallback()
         {
             var response = _vnPayService.PaymentExecute(Request.Query);
-
+            var url = _vnPayService.SavePaymentData(response);
             return Ok(response);
         }
 

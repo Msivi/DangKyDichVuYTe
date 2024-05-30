@@ -16,9 +16,6 @@ ConfigurationManager configuration = builder.Configuration;
 builder.Services.Configure<AppSettingModel>(configuration.GetSection("AppSettings"));
  
 var secretKey = configuration["AppSettings:SecretKey"];
-
- 
-
 var secretKeyBytes = Encoding.UTF8.GetBytes(secretKey);
 
 
@@ -68,6 +65,8 @@ builder.Services.AddScoped<IChuyenKhoaRepository, ChuyenKhoaRepository>();
 builder.Services.AddScoped<ICTBacSiRepository, CTBacSiRepository>();
 builder.Services.AddScoped<IVnPayService, VnPayService>();
 builder.Services.AddScoped<IHoaDonRepository, HoaDonRepository>();
+builder.Services.AddScoped<ICTMuaThuocRepository, CTMuaThuocRepository>();
+builder.Services.AddScoped<ICTMuaThietBiYTeRepository, CTMuaThietBiYTeRepository>();
 //======================================
 
 //======================================

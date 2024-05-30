@@ -25,7 +25,13 @@ namespace Backend_DV_YTe.Repository
                 throw new Exception(message: "Id is already exist!");
             }
 
+            if (entity.ngayHetHan <= entity.ngaySanXuat)
+            {
+                throw new Exception(message: "Ngày hết hạng phải lớn hơn ngày sản xuất!");
+            }
+
             var mapEntity = _mapper.Map<ThietBiYTeEntity>(entity);
+            mapEntity.soLuong = 0;
 
             await _context.thietBiYTeEntities.AddAsync(mapEntity);
             await _context.SaveChangesAsync();
