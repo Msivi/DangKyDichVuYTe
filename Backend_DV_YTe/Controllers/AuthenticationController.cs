@@ -65,6 +65,20 @@ namespace Backend_DV_YTe.Controllers
                         Data = token
                     });
                 }
+                else if (result is BacSiEntity bacSi)
+                {
+                    var token = _authenticationService.GenerateToken(bacSi);
+
+                    var userIdBytes = BitConverter.GetBytes(bacSi.Id);
+                    await distributedCache.SetAsync("UserId", userIdBytes);
+
+                    return Ok(new ApiResponse
+                    {
+                        Success = true,
+                        Message = "Authentication successful",
+                        Data = token
+                    });
+                }
 
                 return BadRequest(new ApiResponse { Success = false, Message = "Unauthorized access" });
             }
@@ -102,8 +116,33 @@ namespace Backend_DV_YTe.Controllers
                 return BadRequest(result);
             }
         }
+        [HttpPost]
+        [Route("/api/[controller]/create-bac-si")]
+        public async Task<ActionResult<BacSiEntity>> CreateBacSi(BacSiModel model)
+        {
+            try
+            {
 
-        [Authorize(Roles = "QuanLy")]
+
+                var result = await _authenticationService.CreateBacSi(model);
+
+                return Ok(new BaseResponseModel<string>(
+                    statusCode: StatusCodes.Status201Created,
+                    code: "Success!",
+                    data: result));
+            }
+            catch (Exception ex)
+            {
+                dynamic result;
+                result = new BaseResponseModel<string>(
+                   statusCode: StatusCodes.Status500InternalServerError,
+                   code: "Failed!",
+                   message: ex.Message);
+                return BadRequest(result);
+            }
+        }
+
+        //[Authorize(Roles = "QuanLy")]
         [HttpPost]
         [Route("/api/[controller]/create-nhan-vien")]
         public async Task<ActionResult<KhachHangEntity>> CreateNhanVien(NhanVienModel model)
@@ -127,7 +166,7 @@ namespace Backend_DV_YTe.Controllers
                 return BadRequest(result);
             }
         }
-        [Authorize(Roles = "QuanLy")]
+        //[Authorize(Roles = "QuanLy")]
         [HttpPost]
         [Route("/api/[controller]/create-quan-ly")]
         public async Task<ActionResult<KhachHangEntity>> CreateQuanLy(NhanVienModel model)

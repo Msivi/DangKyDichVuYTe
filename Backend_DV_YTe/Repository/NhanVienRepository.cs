@@ -28,6 +28,7 @@ namespace Backend_DV_YTe.Repository
         public async Task<ICollection<NhanVienEntity>> GetAllNhanVien()
         {
             var entities = await _context.nhanVienEntities
+                .Where(c=>c.DeletedTime==null)
                 .ToListAsync();
 
             return entities;
@@ -60,7 +61,7 @@ namespace Backend_DV_YTe.Repository
 
             return entity;
         }
-        public async Task UpdateNhanVien(NhanVienModel entity)
+        public async Task UpdateNhanVien(updateNhanVienModel entity)
         {
             byte[] userIdBytes = await _distributedCache.GetAsync("UserId");// Lấy giá trị UserId từ Distributed Cache
             int userId = BitConverter.ToInt32(userIdBytes, 0);
@@ -100,5 +101,38 @@ namespace Backend_DV_YTe.Repository
                 throw; // Không cần throw ex; vì sẽ mất thông tin gốc về exception
             }
         }
+        public async Task<NhanVienEntity> DeleteNhaVien(int id, bool isPhysical)
+        {
+            try
+            {
+                var entity = await _context.nhanVienEntities.FirstOrDefaultAsync(e => e.Id == id && e.DeletedTime == null);
+                if (entity == null)
+                {
+                    throw new Exception("Không tìm thấy nhà cung cấp!");
+                }
+                else
+                {
+                    if (isPhysical)
+                    {
+                        _context.nhanVienEntities.Remove(entity);
+                    }
+                    else
+                    {
+                        entity.DeletedTime = DateTimeOffset.Now;
+                        _context.nhanVienEntities.Update(entity);
+                    }
+
+                    await _context.SaveChangesAsync();
+
+                }
+                return entity;
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
     }
 }

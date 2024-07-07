@@ -7,5 +7,6 @@
         public string diaDiem { get; set; }
         public string tenBacSi { get; set; }
         public string tenDichVu { get; set; }
+        public string tenKhachHang { get; set; }
     }
 }

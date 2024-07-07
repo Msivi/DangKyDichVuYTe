@@ -72,11 +72,42 @@ namespace Backend_DV_YTe.Controllers
             try
             {
                 byte[] userIdBytes = await _distributedCache.GetAsync("UserId");// Lấy giá trị UserId từ Distributed Cache
+                if (userIdBytes == null || userIdBytes.Length != sizeof(int))
+                {
+                    throw new Exception(message: "Vui lòng đăng nhập!");
+                }
+
                 int userId = BitConverter.ToInt32(userIdBytes, 0);
 
                 var mapEntity = _mapper.Map<CTNhapThuocEntity>(model);
                 mapEntity.CreateBy = userId;
                 var result = await _cTNhapThuocRepository.CreateCTNhapThuoc(mapEntity);
+
+                return Ok(new BaseResponseModel<string>(
+                    statusCode: StatusCodes.Status201Created,
+                    code: "Success!",
+                    data: result));
+            }
+            catch (Exception ex)
+            {
+                dynamic result;
+                result = new BaseResponseModel<string>(
+                   statusCode: StatusCodes.Status500InternalServerError,
+                   code: "Failed!",
+                   message: ex.Message);
+                return BadRequest(result);
+            }
+        }
+        [HttpPost]
+        [Route("/api/[controller]/add-ct-nhap-thuoc-asyns")]
+        public async Task<ActionResult<string>> AddCTNhapThuocAsync(NhapThuocDto nhapThuocDto)
+        {
+            try
+            {
+                 
+
+               
+                var result = await _cTNhapThuocRepository.AddNhapThuocAsync(nhapThuocDto);
 
                 return Ok(new BaseResponseModel<string>(
                     statusCode: StatusCodes.Status201Created,

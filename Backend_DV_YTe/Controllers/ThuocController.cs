@@ -28,7 +28,7 @@ namespace Backend_DV_YTe.Controllers
 
         [HttpGet]
         [Route("/api/[controller]/get-thuoc-by-id")]
-        public async Task<ActionResult<ThuocEntity>> GetThuocById(int id)
+        public async Task<ActionResult<AllThuocModel>> GetThuocById(int id)
         {
             try
             {
@@ -47,7 +47,7 @@ namespace Backend_DV_YTe.Controllers
         }
         [HttpGet]
         [Route("/api/[controller]/get-thuoc-by-id-loai-thuoc")]
-        public async Task<ActionResult<ThuocEntity>> GetThuocByIdLoaiThuoc(int id)
+        public async Task<ActionResult<AllThuocModel>> GetThuocByIdLoaiThuoc(int id)
         {
             try
             {
@@ -88,7 +88,7 @@ namespace Backend_DV_YTe.Controllers
         }
         [HttpGet]
         [Route("/api/[controller]/get-all-thuoc")]
-        public async Task<ActionResult<ICollection<ThuocEntity>>> GetAllThuoc()
+        public async Task<ActionResult<ICollection<AllThuocModel>>> GetAllThuoc()
         {
             try
             {
@@ -105,10 +105,29 @@ namespace Backend_DV_YTe.Controllers
                 return BadRequest(result);
             }
         }
+        //[HttpGet]
+        //[Route("/api/[controller]/get-all-thuoc-by-ma-loai-thuoc")]
+        //public async Task<ActionResult<ICollection<ThuocEntity>>> GetAllThuocByMaLoai(int maLoaiThuoc)
+        //{
+        //    try
+        //    {
+        //        var entity = await _thuocRepository.GetAllThuocByMaLoai(maLoaiThuoc);
+
+        //        return Ok(entity);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        dynamic result = new BaseResponseModel<string>(
+        //           statusCode: StatusCodes.Status500InternalServerError,
+        //           code: "Failed!",
+        //           message: ex.Message);
+        //        return BadRequest(result);
+        //    }
+        //}
 
         [HttpGet]
         [Route("/api/[controller]/search-thuoc")]
-        public async Task<ActionResult<IEnumerable<ThuocEntity>>> SearchThuoc(string searchKey)
+        public async Task<ActionResult<ICollection<AllThuocModel>>> SearchThuoc(string searchKey)
         {
             try
             {
@@ -128,19 +147,24 @@ namespace Backend_DV_YTe.Controllers
                 return BadRequest(result);
             }
         }
-        [Authorize(Roles = "QuanLy")]
+        //[Authorize(Roles = "QuanLy")]
         [HttpPost]
         [Route("/api/[controller]/create-thuoc")]
-        public async Task<ActionResult<string>> CreateThuoc(ThuocModel model)
+        public async Task<ActionResult<string>> CreateThuoc([FromForm]ThuocModel model, IFormFile? imageFile)
         {
             try
             {
                 byte[] userIdBytes = await _distributedCache.GetAsync("UserId");// Lấy giá trị UserId từ Distributed Cache
+                if (userIdBytes == null || userIdBytes.Length != sizeof(int))
+                {
+                    throw new Exception(message: "Vui lòng đăng nhập!");
+                }
+
                 int userId = BitConverter.ToInt32(userIdBytes, 0);
 
                 var mapEntity = _mapper.Map<ThuocEntity>(model);
                 mapEntity.CreateBy = userId;
-                var result = await _thuocRepository.CreateThuoc(mapEntity);
+                var result = await _thuocRepository.CreateThuoc(mapEntity,imageFile);
 
                 return Ok(new BaseResponseModel<string>(
                     statusCode: StatusCodes.Status201Created,
@@ -157,20 +181,25 @@ namespace Backend_DV_YTe.Controllers
                 return BadRequest(result);
             }
         }
-        [Authorize(Roles = "QuanLy")]
+        //[Authorize(Roles = "QuanLy")]
         [HttpPut]
         [Route("/api/[controller]/update-thuoc")]
-        public async Task<ActionResult> UpdateThuoc(int id, ThuocModel entity)
+        public async Task<ActionResult> UpdateThuoc(int id, [FromForm] ThuocModel entity, IFormFile? imageFile)
         {
             try
             {
 
                 byte[] userIdBytes = await _distributedCache.GetAsync("UserId");// Lấy giá trị UserId từ Distributed Cache
+                if (userIdBytes == null || userIdBytes.Length != sizeof(int))
+                {
+                    throw new Exception(message: "Vui lòng đăng nhập!");
+                }
+
                 int userId = BitConverter.ToInt32(userIdBytes, 0);
 
                 var mapEntity = _mapper.Map<ThuocEntity>(entity);
                 mapEntity.CreateBy = userId;
-                await _thuocRepository.UpdateThuoc(id, mapEntity);
+                await _thuocRepository.UpdateThuoc(id, mapEntity,imageFile);
 
                 return Ok(new BaseResponseModel<string>(
                     statusCode: StatusCodes.Status200OK,
@@ -185,7 +214,7 @@ namespace Backend_DV_YTe.Controllers
                     message: ex.Message));
             }
         }
-        [Authorize(Roles = "QuanLy")]
+        //[Authorize(Roles = "QuanLy")]
         [HttpDelete]
         [Route("/api/[controller]/delete-thuoc")]
         public async Task<ActionResult<ThuocEntity>> DeleteThuoc(int keyId)

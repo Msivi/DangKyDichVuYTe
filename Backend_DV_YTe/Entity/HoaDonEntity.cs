@@ -8,6 +8,8 @@ namespace Backend_DV_YTe.Entity
         public DateTime ngayMua { get; set; }
         public double tongTien { get; set; }
         public string trangThai { get; set; }
+        public string? ghiChu { get; set; }
+        public int? diaChi {get; set; }
 
         public virtual ICollection<CTMuaThuocEntity> CTMuaThuoc { get; set; }
         public virtual ICollection<CTMuaThietBiYTeEntity> CTMuaThietBiYTe { get; set; }

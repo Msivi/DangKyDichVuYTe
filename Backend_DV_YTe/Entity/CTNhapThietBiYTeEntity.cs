@@ -18,9 +18,13 @@ namespace Backend_DV_YTe.Entity
         public int MaNhapThietBiYTe { get; set; }
         public virtual NhapThietBiYTeEntity NhapThietBiYTe { get; set; }
 
-        public int soLuong{ get; set; }
-        //public DateTime ngayTao { get; set; }
+        [ForeignKey("LoThietBi")]
+        public int? MaLoThietBi { get; set; }
+        public virtual LoThietBiYTeEntity LoThietBi { get; set; }
 
-        
+        public int soLuong{ get; set; }
+        public double donGiaNhap { get; set; }
+
+
     }
 }

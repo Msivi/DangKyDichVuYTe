@@ -16,5 +16,7 @@ namespace Backend_DV_YTe.Repository.Interface
         Task<DanhGiaEntity> DeleteDanhGia(int id, bool isPhysical);
         Task<List<DichVuDanhGia>> GetDichVuDanhGia(int maDichVu);
         Task<List<DanhGiaEntity>> GetAllDanhGiaByMaDichVu(int maDichVu);
+        // thống kê đánh giá cho bác sĩ
+        Task<Dictionary<int, (string DoctorName, double AverageRating)>> GetAverageRatingPerDoctorWithNames();
     }
 }

@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Backend_DV_YTe.Entity;
 using Backend_DV_YTe.Model;
+using Backend_DV_YTe.Repository;
 using Backend_DV_YTe.Repository.Interface;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -160,8 +161,13 @@ namespace Backend_DV_YTe.Controllers
             try
             {
                 byte[] userIdBytes = await _distributedCache.GetAsync("UserId");// Lấy giá trị UserId từ Distributed Cache
+                if (userIdBytes == null || userIdBytes.Length != sizeof(int))
+                {
+                    throw new Exception(message: "Vui lòng đăng nhập!");
+                }
+
                 int userId = BitConverter.ToInt32(userIdBytes, 0);
-                 
+
                 var mapEntity = _mapper.Map<DichVuEntity>(model);
                 mapEntity.CreateBy = userId;
                 var result = await _dichVuRepository.CreateDichVu(mapEntity,imageFile);
@@ -183,17 +189,22 @@ namespace Backend_DV_YTe.Controllers
         }
         [HttpPut]
         [Route("/api/[controller]/update-dich-vu")]
-        public async Task<IActionResult> UpdateDichVu(int id, DichVuModel entity)
+        public async Task<IActionResult> UpdateDichVu(int id,[FromForm] DichVuModel entity, IFormFile? imageFile)
         {
             try
             {
-                byte[] userIdBytes = await _distributedCache.GetAsync("UserId");
+                byte[] userIdBytes = await _distributedCache.GetAsync("UserId");// Lấy giá trị UserId từ Distributed Cache
+                if (userIdBytes == null || userIdBytes.Length != sizeof(int))
+                {
+                    throw new Exception(message: "Vui lòng đăng nhập!");
+                }
+
                 int userId = BitConverter.ToInt32(userIdBytes, 0);
 
                 //var mapEntity = _mapper.Map<DichVuEntity>(entity);
                 //mapEntity.CreateBy=userId;
 
-                await _dichVuRepository.UpdateDichVu(id, entity);
+                await _dichVuRepository.UpdateDichVu(id, entity,imageFile);
 
                 return Ok(new BaseResponseModel<string>(
                     statusCode: StatusCodes.Status200OK,
@@ -229,6 +240,27 @@ namespace Backend_DV_YTe.Controllers
                     statusCode: StatusCodes.Status400BadRequest,
                     code: "Error",
                     message: ex.Message));
+            }
+        }
+        [HttpGet]
+        [Route("/api/[controller]/get-xuat-dich-vu-by-ma-loai-pdf")]
+        public async Task<IActionResult> DownloadPdfFile(int maLoaiDichVu)
+        {
+            try
+            {
+                byte[] pdfBytes = await _dichVuRepository.DownloadPdfFile(maLoaiDichVu);
+
+                // Trả về tệp tin PDF
+                return File(pdfBytes, "application/pdf", "DanhSachThietBiTheoLoai" + DateTime.Now + ".pdf");
+            }
+            catch (Exception ex)
+            {
+                dynamic result;
+                result = new BaseResponseModel<string>(
+                   statusCode: StatusCodes.Status500InternalServerError,
+                   code: "Failed!",
+                   message: ex.Message);
+                return BadRequest(result);
             }
         }
     }

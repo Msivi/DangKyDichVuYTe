@@ -10,6 +10,7 @@ namespace Backend_DV_YTe.Model
         public DateTime thoiGianDuKien { get; set; }
         public int MaBacSi { get; set; }
         public int MaDichVu { get; set; }
-        
+        public string? ghiChu { get; set; }
+
     }
 }

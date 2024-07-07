@@ -24,27 +24,30 @@ namespace Backend_DV_YTe.Repository
                 .FirstOrDefaultAsync(c => c.MaHoaDon == ctMua.MaHoaDon && c.MaThietBiYTe == ctMua.MaThietBiYTe && c.DeletedTime == null);
 
             var existingHoaDon = await _context.hoaDonEntities.FirstOrDefaultAsync(c => c.Id == ctMua.MaHoaDon && c.DeletedTime == null);
-
+            var slThietBiTrongLo = await _context.loThietBiYTeEntities
+                         .Where(l => l.MaThietbiYTe == ctMua.MaThietBiYTe && l.DeletedTime == null)
+                         .SumAsync(l => l.soLuong);
             if (existingCTMuaThietBiYTe != null) // có mặc hàng r
             {
                 var existingThietBi = await _context.thietBiYTeEntities
                    .FirstOrDefaultAsync(c => c.Id == ctMua.MaThietBiYTe && c.DeletedTime == null);
-                if (ctMua.soLuong > existingThietBi.soLuong)
+               
+                if (ctMua.soLuong > slThietBiTrongLo)
                 {
-                    throw new Exception("Không đủ số lượng trong kho. Sô lượng hiện tại có thể mua là: " + existingThietBi.soLuong);
+                    throw new Exception("Không đủ số lượng trong kho. Sô lượng hiện tại có thể mua là: " + slThietBiTrongLo);
                 }
 
                 existingCTMuaThietBiYTe.soLuong += ctMua.soLuong;
 
-                var khoangChenhLech =   (ctMua.soLuong * existingThietBi.donGia);
+                var khoangChenhLech = (ctMua.soLuong * existingThietBi.donGia);
 
                 existingCTMuaThietBiYTe.thanhTien += khoangChenhLech;
                 _context.cTMuaThietBiYTeEntities.Update(existingCTMuaThietBiYTe); // nếu khách đã chọn trước r thì cập nhật thêm số lượng vào
                 // cập nhật lại sl thuốc trong kho
-                existingThietBi.soLuong -= ctMua.soLuong;
-                _context.thietBiYTeEntities.Update(existingThietBi); 
+                //existingThietBi.soLuong -= ctMua.soLuong;
+                //_context.thietBiYTeEntities.Update(existingThietBi); 
                 // cập nhật lại giá tiền trong hóa đơn
-                existingHoaDon.tongTien += khoangChenhLech; 
+                existingHoaDon.tongTien += khoangChenhLech;
                 _context.hoaDonEntities.Update(existingHoaDon);
 
             }
@@ -63,12 +66,12 @@ namespace Backend_DV_YTe.Repository
                 {
                     throw new Exception(message: "Mã hóa đơn không tồn tại!");
                 }
-                if (existingThietBi.soLuong < ctMua.soLuong)
+                if (slThietBiTrongLo < ctMua.soLuong)
                 {
-                    throw new Exception(message: $"Số lượng thiết bị trong kho không đủ! Số lượng trong kho là:" + existingThietBi.soLuong);
+                    throw new Exception(message: $"Số lượng thiết bị trong kho không đủ! Số lượng trong kho là:" + slThietBiTrongLo);
                 }
-                existingThietBi.soLuong -= ctMua.soLuong;
-                _context.thietBiYTeEntities.Update(existingThietBi);
+                //existingThietBi.soLuong -= ctMua.soLuong;
+                //_context.thietBiYTeEntities.Update(existingThietBi);
 
                 ctMua.donGia = existingThietBi.donGia;
                 ctMua.thanhTien = ctMua.soLuong * existingThietBi.donGia;
@@ -143,6 +146,38 @@ namespace Backend_DV_YTe.Repository
                 throw new Exception(ex.Message);
             }
         }
+        public async Task<ICollection<CTMuaThietBiYTeEntity>> GetAllCTMuaThietBiYTeKH()
+        {
+            try
+            {
+                byte[] userIdBytes = await _distributedCache.GetAsync("UserId"); // Lấy giá trị UserId từ Distributed Cache
+                if (userIdBytes == null || userIdBytes.Length != sizeof(int))
+                {
+                    throw new Exception("Vui lòng đăng nhập!");
+                }
+
+                int userId = BitConverter.ToInt32(userIdBytes, 0);
+
+                var hoaDonIds = await _context.hoaDonEntities
+                    .Where(h => h.MaKhachHang == userId)
+                    .Select(h => h.Id)
+                    .ToListAsync();
+
+                var ctmuaThietBiYTeEntities = await _context.cTMuaThietBiYTeEntities
+                                              .Where(ct => hoaDonIds.Contains(ct.MaHoaDon))
+                                              .ToListAsync();
+
+                if (ctmuaThietBiYTeEntities == null || ctmuaThietBiYTeEntities.Count == 0)
+                {
+                    throw new Exception("Danh sách trống!");
+                }
+                return ctmuaThietBiYTeEntities;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
 
         public async Task<CTMuaThietBiYTeEntity> GetCTMuaThietBiYTeById(int maHD, int maTB)
         {
@@ -157,12 +192,21 @@ namespace Backend_DV_YTe.Repository
 
         public async Task UpdateCTMuaThietBiYTe(int maHD, int maTB, CTMuaThietBiYTeModel entity)
         {
+
+
             byte[] userIdBytes = await _distributedCache.GetAsync("UserId");// Lấy giá trị UserId từ Distributed Cache
+            if (userIdBytes == null || userIdBytes.Length != sizeof(int))
+            {
+                throw new Exception(message: "Vui lòng đăng nhập!");
+            }
+
             int userId = BitConverter.ToInt32(userIdBytes, 0);
 
             var existingCTMuaThietBiYTe = await _context.cTMuaThietBiYTeEntities
                 .FirstOrDefaultAsync(c => c.MaHoaDon == maHD && c.MaThietBiYTe == maTB && c.DeletedTime == null);
-
+            var slThietBiTrongLo = await _context.loThietBiYTeEntities
+                         .Where(l => l.MaThietbiYTe == maTB && l.DeletedTime == null)
+                         .SumAsync(l => l.soLuong);
             if (existingCTMuaThietBiYTe == null)
             {
                 throw new Exception(message: "Không tìm thấy thông tin mua thuốc!");
@@ -184,7 +228,7 @@ namespace Backend_DV_YTe.Repository
 
             if (existingCTMuaThietBiYTe.soLuong > entity.soLuong)// số lượng mua lại, bé hơn
             {
-                existingThietBi.soLuong += existingCTMuaThietBiYTe.soLuong - entity.soLuong; // cộng lại số lượng dư vào thiet bi
+                //existingThietBi.soLuong += existingCTMuaThietBiYTe.soLuong - entity.soLuong; // cộng lại số lượng dư vào thiet bi
 
                 var GiaLech = (existingCTMuaThietBiYTe.soLuong- entity.soLuong) * existingThietBi.donGia;
 
@@ -196,19 +240,19 @@ namespace Backend_DV_YTe.Repository
                 existingMaHoaDon.tongTien -= GiaLech;
                 _context.hoaDonEntities.Update(existingMaHoaDon);
 
-                _context.thietBiYTeEntities.Update(existingThietBi);
+                //_context.thietBiYTeEntities.Update(existingThietBi);
             }
             else // số lượng mua lai, lớn hơn
             {
-                if (existingThietBi.soLuong < (entity.soLuong - existingCTMuaThietBiYTe.soLuong))
+                if (slThietBiTrongLo < (entity.soLuong - existingCTMuaThietBiYTe.soLuong))
                 {
-                    throw new Exception(message: $"Số lượng hiện tại trong kho không đủ để thực hiện cập nhật này! Số lượng hiện tại kho đang là: {existingThietBi.soLuong}");
+                    throw new Exception(message: $"Số lượng hiện tại trong kho không đủ để thực hiện cập nhật này! Số lượng hiện tại kho đang là: {slThietBiTrongLo}");
                 }
                 else
                 {
-                    existingThietBi.soLuong -= entity.soLuong - existingCTMuaThietBiYTe.soLuong;
+                    //existingThietBi.soLuong -= entity.soLuong - existingCTMuaThietBiYTe.soLuong;
 
-                    var giaLech = (entity.soLuong - existingCTMuaThietBiYTe.soLuong)  * existingThietBi.donGia;
+                    var giaLech = (entity.soLuong - existingCTMuaThietBiYTe.soLuong) * existingThietBi.donGia;
 
                     existingCTMuaThietBiYTe.soLuong = entity.soLuong;
                     existingCTMuaThietBiYTe.donGia = existingThietBi.donGia;
@@ -218,7 +262,7 @@ namespace Backend_DV_YTe.Repository
                     existingMaHoaDon.tongTien += giaLech;
                     _context.hoaDonEntities.Update(existingMaHoaDon);
 
-                    _context.thietBiYTeEntities.Update(existingThietBi);
+                    //_context.thietBiYTeEntities.Update(existingThietBi);
 
                 }
 

@@ -4,9 +4,11 @@ using Backend_DV_YTe.Model;
 using Backend_DV_YTe.Repository.Interface;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
 using System.Data;
+using static iTextSharp.text.pdf.events.IndexEvents;
 
 namespace Backend_DV_YTe.Controllers
 {
@@ -83,7 +85,7 @@ namespace Backend_DV_YTe.Controllers
         }
         [HttpGet]
         [Route("/api/[controller]/get-sao-danh-gia")]
-        public async Task<ActionResult<ICollection<DichVuDanhGia>>> GetSaoDanhGia( int maDichVu)
+        public async Task<ActionResult<ICollection<DichVuDanhGia>>> GetSaoDanhGia(int maDichVu)
         {
             try
             {
@@ -146,21 +148,26 @@ namespace Backend_DV_YTe.Controllers
 
         [HttpPost]
         [Route("/api/[controller]/create-danh-gia")]
-        public async Task<IActionResult> CreateDanhGia([FromForm] DanhGiaModel model, IFormFile imageFile)
+        public async Task<IActionResult> CreateDanhGia([FromForm] DanhGiaModel model, IFormFile? imageFile)
         {
             try
             {
-               
+
 
 
                 byte[] userIdBytes = await _distributedCache.GetAsync("UserId");// Lấy giá trị UserId từ Distributed Cache
+                if (userIdBytes == null || userIdBytes.Length != sizeof(int))
+                {
+                    throw new Exception(message: "Vui lòng đăng nhập!");
+                }
+
                 int userId = BitConverter.ToInt32(userIdBytes, 0);
 
                 var mapEntity = _mapper.Map<DanhGiaEntity>(model);
                 mapEntity.CreateBy = userId;
-              
-              
-                var result = await _danhGiaRepository.CreateDanhGia(mapEntity,imageFile);
+
+
+                var result = await _danhGiaRepository.CreateDanhGia(mapEntity, imageFile);
 
                 return Ok(new BaseResponseModel<string>(
                     statusCode: StatusCodes.Status201Created,
@@ -183,13 +190,18 @@ namespace Backend_DV_YTe.Controllers
         {
             try
             {
-                byte[] userIdBytes = await _distributedCache.GetAsync("UserId");
+                byte[] userIdBytes = await _distributedCache.GetAsync("UserId");// Lấy giá trị UserId từ Distributed Cache
+                if (userIdBytes == null || userIdBytes.Length != sizeof(int))
+                {
+                    throw new Exception(message: "Vui lòng đăng nhập!");
+                }
+
                 int userId = BitConverter.ToInt32(userIdBytes, 0);
 
                 //var mapEntity = _mapper.Map<DanhGiaEntity>(entity);
                 //mapEntity.CreateBy=userId;
 
-                await _danhGiaRepository.UpdateDanhGia(id, entity,imageFile);
+                await _danhGiaRepository.UpdateDanhGia(id, entity, imageFile);
 
                 return Ok(new BaseResponseModel<string>(
                     statusCode: StatusCodes.Status200OK,
@@ -204,13 +216,13 @@ namespace Backend_DV_YTe.Controllers
                     message: ex.Message));
             }
         }
-        [Authorize(Roles = "NhanVien")]
+        //[Authorize(Roles = "NhanVien")]
         [HttpPut]
         [Route("/api/[controller]/update-duyet-danh-gia")]
         public async Task<IActionResult> UpdateDuyetDanhGia(List<int> ids)
         {
             try
-            { 
+            {
                 await _danhGiaRepository.DuyetDanhGia(ids);
 
                 return Ok(new BaseResponseModel<string>(
@@ -247,6 +259,32 @@ namespace Backend_DV_YTe.Controllers
                     statusCode: StatusCodes.Status400BadRequest,
                     code: "Error",
                     message: ex.Message));
+            }
+        }
+
+        [HttpGet]
+        [Route("/api/[controller]/get-thong-ke-danh-gia-bac-si")]
+        public async Task<ActionResult<Dictionary<int, (string DoctorName, double AverageRating)>>> GetAverageDoctorRating()
+        {
+            try
+            {
+              var ketQua=  await _danhGiaRepository.GetAverageRatingPerDoctorWithNames();
+                var doctorRatings = ketQua.ToDictionary(
+                                       kvp => kvp.Key,
+                                       kvp => new DoctorRatingDataModel
+                                       {
+                                           DoctorName = kvp.Value.DoctorName,
+                                           AverageRating = kvp.Value.AverageRating
+                                       });
+                return Ok(doctorRatings);
+            }
+            catch (Exception ex)
+            {
+                dynamic result = new BaseResponseModel<string>(
+                   statusCode: StatusCodes.Status500InternalServerError,
+                   code: "Failed!",
+                   message: ex.Message);
+                return BadRequest(result);
             }
         }
     }

@@ -11,7 +11,7 @@ namespace Backend_DV_YTe.Repository.Interface
         Task<KhachHangEntity> GetTTKhachHang();
         Task UpdateKhachHang(KhachHangModel entity);
         Task UpdateAvatar(string avatarUrl);
-
+        Task<KhachHangEntity> DeleteKhachHang(int id, bool isPhysical);
         //Task<KhachHangEntity> DeleteKhachHang(string entity, bool isPhysical);
     }
 }

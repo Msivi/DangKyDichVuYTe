@@ -6,6 +6,6 @@
         public int MaThietBiYTe { get; set; }
         public int MaNhapThietBiYTe { get; set; }
         public int soLuong { get; set; }
-        //public DateTime ngayTao { get; set; }
+        public double donGiaNhap { get; set; }
     }
 }

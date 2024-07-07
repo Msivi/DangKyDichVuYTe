@@ -18,7 +18,13 @@ namespace Backend_DV_YTe.Entity
         public int MaNhapThuoc { get; set; }
         public virtual NhapThuocEntity NhapThuoc { get; set; }
 
+        [ForeignKey("LoThuoc")]
+        public int MaLoThuoc { get; set; }
+        public virtual LoThuocEntity LoThuoc { get; set; }
+
         public int soLuong { get; set; }
-         
+        public double donGiaNhap { get; set; }
+
+
     }
 }

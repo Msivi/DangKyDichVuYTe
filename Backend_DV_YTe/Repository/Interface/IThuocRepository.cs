@@ -5,14 +5,14 @@ namespace Backend_DV_YTe.Repository.Interface
 {
     public interface IThuocRepository
     {
-        Task<ICollection<ThuocEntity>> GetAllThuoc();
-        Task<ThuocEntity> GetThuocById(int Id);
-        Task<ICollection<ThuocEntity>> SearchThuoc(string searchKey);
-        Task<string> CreateThuoc(ThuocEntity entity);
-        Task UpdateThuoc(int id, ThuocEntity entity);
+        Task<ICollection<AllThuocModel>> GetAllThuoc();
+        Task<AllThuocModel> GetThuocById(int id);
+        Task<ICollection<AllThuocModel>> SearchThuoc(string searchKey);
+        Task<string> CreateThuoc(ThuocEntity entity, IFormFile imageFile);
+        Task UpdateThuoc(int id, ThuocEntity entity, IFormFile imageFile);
         Task<ThuocEntity> DeleteThuoc(int entity, bool isPhysical);
         Task<ICollection<AllThuocModel>> GetThuocByLoaiThuoc(int entity);
-
+        //Task<ICollection<ThuocEntity>> GetAllThuocByMaLoai(int maL);
         Task<byte[]> DownloadPdfFile(int entity);
     }
 }

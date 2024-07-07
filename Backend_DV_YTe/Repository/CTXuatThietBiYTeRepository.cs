@@ -26,56 +26,56 @@ namespace Backend_DV_YTe.Repository
             var existingSLThietBi = await _context.thietBiYTeEntities
                    .FirstOrDefaultAsync(c => c.Id == entity.MaThietBiYTe && c.DeletedTime == null);
 
-            if (existingSLThietBi.soLuong < entity.soLuong)
-            {
-                throw new Exception($"Không đủ số lượng thiết bị để xuất! (Số lượng hiện tại trong kho: {existingSLThietBi.soLuong})");
-            }
+            //if (existingSLThietBi.soLuong < entity.soLuong)
+            //{
+            //    throw new Exception($"Không đủ số lượng thiết bị để xuất! (Số lượng hiện tại trong kho: {existingSLThietBi.soLuong})");
+            //}
 
-            if (existingCTXuatThietBiYTe != null)
-            {
-                existingCTXuatThietBiYTe.soLuong += entity.soLuong;
-                _context.cTXuatThietBiYTeEntities.Update(existingCTXuatThietBiYTe);
+            //if (existingCTXuatThietBiYTe != null)
+            //{
+            //    existingCTXuatThietBiYTe.soLuong += entity.soLuong;
+            //    _context.cTXuatThietBiYTeEntities.Update(existingCTXuatThietBiYTe);
 
-                var existingMaThietBi = await _context.thietBiYTeEntities
-                    .FirstOrDefaultAsync(c => c.Id == entity.MaThietBiYTe && c.DeletedTime == null);
-                if (existingMaThietBi != null)
-                {
-                    existingMaThietBi.soLuong -= entity.soLuong;
-                    _context.thietBiYTeEntities.Update(existingMaThietBi);
-                }
-            }
-            else
-            {
-                var existingMaThietBi = await _context.thietBiYTeEntities
-                    .FirstOrDefaultAsync(c => c.Id == entity.MaThietBiYTe && c.DeletedTime == null);
-                if (existingMaThietBi == null)
-                {
-                    throw new Exception(message: "Mã thuoc không tồn tại!");
-                }
+            //    var existingMaThietBi = await _context.thietBiYTeEntities
+            //        .FirstOrDefaultAsync(c => c.Id == entity.MaThietBiYTe && c.DeletedTime == null);
+            //    if (existingMaThietBi != null)
+            //    {
+            //        existingMaThietBi.soLuong -= entity.soLuong;
+            //        _context.thietBiYTeEntities.Update(existingMaThietBi);
+            //    }
+            //}
+            //else
+            //{
+            //    var existingMaThietBi = await _context.thietBiYTeEntities
+            //        .FirstOrDefaultAsync(c => c.Id == entity.MaThietBiYTe && c.DeletedTime == null);
+            //    if (existingMaThietBi == null)
+            //    {
+            //        throw new Exception(message: "Mã thuoc không tồn tại!");
+            //    }
 
-                var existingMaXuat = await _context.xuatThuocEntities
-                    .FirstOrDefaultAsync(c => c.Id == entity.MaXuatThietBiYTe && c.DeletedTime == null);
-                if (existingMaXuat == null)
-                {
-                    throw new Exception(message: "Mã xuất thiết bị không tồn tại!");
-                }
+            //    var existingMaXuat = await _context.xuatThuocEntities
+            //        .FirstOrDefaultAsync(c => c.Id == entity.MaXuatThietBiYTe && c.DeletedTime == null);
+            //    if (existingMaXuat == null)
+            //    {
+            //        throw new Exception(message: "Mã xuất thiết bị không tồn tại!");
+            //    }
 
-                //if (existingMaThietBi.soLuong < entity.soLuong)
-                //{
-                //    throw new Exception($"Không đủ số lượng thiết bị để xuất! (Số lượng hiện tại trong kho: {existingMaThietBi.soLuong})");
-                //}
+            //    //if (existingMaThietBi.soLuong < entity.soLuong)
+            //    //{
+            //    //    throw new Exception($"Không đủ số lượng thiết bị để xuất! (Số lượng hiện tại trong kho: {existingMaThietBi.soLuong})");
+            //    //}
 
 
-                existingMaThietBi.soLuong -= entity.soLuong;
-                _context.thietBiYTeEntities.Update(existingMaThietBi);
+            //    existingMaThietBi.soLuong -= entity.soLuong;
+            //    _context.thietBiYTeEntities.Update(existingMaThietBi);
 
-                // Thêm phiếu xuất vaccine mới
-                var mapEntity = _mapper.Map<CTXuatThietBiYTeEntity>(entity);
-                await _context.cTXuatThietBiYTeEntities.AddAsync(mapEntity);
-            }
+            //    // Thêm phiếu xuất vaccine mới
+            //    var mapEntity = _mapper.Map<CTXuatThietBiYTeEntity>(entity);
+            //    await _context.cTXuatThietBiYTeEntities.AddAsync(mapEntity);
+            //}
 
-            await _context.SaveChangesAsync();
-            danhSachXuatThietBi.Add(entity);
+            //await _context.SaveChangesAsync();
+            //danhSachXuatThietBi.Add(entity);
 
             return $"{entity.MaXuatThietBiYTe}-{entity.MaThietBiYTe}";
         }
@@ -256,31 +256,31 @@ namespace Backend_DV_YTe.Repository
                 throw new Exception(message: "Mã xuất thiết bị không tồn tại!");
             }
 
-            if (existingCTXuatThietBiYTe.soLuong > entity.soLuong)
-            {
-                existingMaThietBi.soLuong = (existingMaThietBi.soLuong != null ? existingMaThietBi.soLuong : 0)
+            //if (existingCTXuatThietBiYTe.soLuong > entity.soLuong)
+            //{
+            //    existingMaThietBi.soLuong = (existingMaThietBi.soLuong != null ? existingMaThietBi.soLuong : 0)
 
-                    + (existingCTXuatThietBiYTe.soLuong - entity.soLuong);
+            //        + (existingCTXuatThietBiYTe.soLuong - entity.soLuong);
 
-            }
-            else
-            {
-                if (existingMaThietBi.soLuong < (entity.soLuong - existingCTXuatThietBiYTe.soLuong))
-                {
-                    throw new Exception(message: $"Số lượng hiện tại trong kho không đủ để thực hiện cập nhật này! Số lượng hiện tại kho đang là: {existingMaThietBi.soLuong}");
-                }
-                else
-                {
-                    existingMaThietBi.soLuong = (existingMaThietBi.soLuong != null ? existingMaThietBi.soLuong : 0)
+            //}
+            //else
+            //{
+            //    if (existingMaThietBi.soLuong < (entity.soLuong - existingCTXuatThietBiYTe.soLuong))
+            //    {
+            //        throw new Exception(message: $"Số lượng hiện tại trong kho không đủ để thực hiện cập nhật này! Số lượng hiện tại kho đang là: {existingMaThietBi.soLuong}");
+            //    }
+            //    else
+            //    {
+            //        existingMaThietBi.soLuong = (existingMaThietBi.soLuong != null ? existingMaThietBi.soLuong : 0)
 
-                        - (entity.soLuong - existingCTXuatThietBiYTe.soLuong);
-                }
+            //            - (entity.soLuong - existingCTXuatThietBiYTe.soLuong);
+            //    }
 
-            }
+            //}
 
-            _context.thietBiYTeEntities.Update(existingMaThietBi);
+            //_context.thietBiYTeEntities.Update(existingMaThietBi);
 
-            _context.Entry(existingCTXuatThietBiYTe).CurrentValues.SetValues(entity);
+            //_context.Entry(existingCTXuatThietBiYTe).CurrentValues.SetValues(entity);
             await _context.SaveChangesAsync();
         }
     }

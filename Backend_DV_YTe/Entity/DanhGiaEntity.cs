@@ -14,9 +14,7 @@ namespace Backend_DV_YTe.Entity
         public int MaKetQuaDichVu { get; set; }
         public virtual KetQuaDichVuEntity KetQuaDichVu { get; set; }
 
-        //[ForeignKey("NhanVien")]
-        //public int? MaNhanVien { get; set; }
-        //public virtual NhanVienEntity NhanVien { get; set; }
+        
 
     }
 }

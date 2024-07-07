@@ -18,6 +18,7 @@ using iTextSharp.text;
 using iTextSharp.text.pdf;
 using System.Net.Mail;
 using Microsoft.AspNetCore.Authorization;
+using Backend_DV_YTe.Repository;
 
 namespace Backend_DV_YTe.Controllers
 {
@@ -57,7 +58,7 @@ namespace Backend_DV_YTe.Controllers
                 return BadRequest(result);
             }
         }
-        [Authorize(Roles = "QuanLy")]
+        //[Authorize(Roles = "QuanLy")]
         [HttpGet]
         [Route("/api/[controller]/get-all-khach-hang")]
         public async Task<ActionResult<IEnumerable<KhachHangEntity>>> GetAllKhachHang()
@@ -98,7 +99,7 @@ namespace Backend_DV_YTe.Controllers
             }
         }
 
-        [Authorize(Roles = "QuanLy")]
+        //[Authorize(Roles = "QuanLy")]
         [HttpGet]
         [Route("/api/[controller]/search-khach-hang")]
         public async Task<ActionResult<IEnumerable<KhachHangEntity>>> SearchKhachHang(string searchKey)
@@ -130,6 +131,11 @@ namespace Backend_DV_YTe.Controllers
             try
             {
                 byte[] userIdBytes = await _distributedCache.GetAsync("UserId");// Lấy giá trị UserId từ Distributed Cache
+                if (userIdBytes == null || userIdBytes.Length != sizeof(int))
+                {
+                    throw new Exception(message: "Vui lòng đăng nhập!");
+                }
+
                 int userId = BitConverter.ToInt32(userIdBytes, 0);
 
 
@@ -316,6 +322,29 @@ namespace Backend_DV_YTe.Controllers
             }
             catch (Exception ex)
             {
+                return BadRequest(new BaseResponseModel<string>(
+                    statusCode: StatusCodes.Status400BadRequest,
+                    code: "Error",
+                    message: ex.Message));
+            }
+        }
+
+        [HttpDelete]
+        [Route("/api/[controller]/delete-khach-hang")]
+        public async Task<ActionResult<KhachHangEntity>> DeleteKhachHang(int keyId)
+        {
+            try
+            {
+
+                await _khachHangRepository.DeleteKhachHang(keyId, false);
+                return Ok(new BaseResponseModel<string>(
+                    statusCode: StatusCodes.Status200OK,
+                    code: "Success!",
+                    data: "Delete successfully!"));
+            }
+            catch (Exception ex)
+            {
+
                 return BadRequest(new BaseResponseModel<string>(
                     statusCode: StatusCodes.Status400BadRequest,
                     code: "Error",

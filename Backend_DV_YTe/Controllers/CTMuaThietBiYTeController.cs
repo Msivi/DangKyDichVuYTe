@@ -43,11 +43,30 @@ namespace Backend_DV_YTe.Controllers
         }
         [HttpGet]
         [Route("/api/[controller]/get-all-ct-mua-thiet-bi-y-te")]
-        public async Task<ActionResult<IEnumerable<CTMuaThietBiYTeEntity>>> GetAllCTMuaThietBiYTe()
+        public async Task<ActionResult<ICollection<CTMuaThietBiYTeEntity>>> GetAllCTMuaThietBiYTe()
         {
             try
             {
                 var entity = await _cTMuaThietBiYTeRepository.GetAllCTMuaThietBiYTe();
+
+                return Ok(entity);
+            }
+            catch (Exception ex)
+            {
+                dynamic result = new BaseResponseModel<string>(
+                   statusCode: StatusCodes.Status500InternalServerError,
+                   code: "Failed!",
+                   message: ex.Message);
+                return BadRequest(result);
+            }
+        }
+        [HttpGet]
+        [Route("/api/[controller]/get-all-ct-mua-thiet-bi-y-te-khach-hang")]
+        public async Task<ActionResult<ICollection<CTMuaThietBiYTeEntity>>> GetAllCTMuaThietBiYTeKhachHang()
+        {
+            try
+            {
+                var entity = await _cTMuaThietBiYTeRepository.GetAllCTMuaThietBiYTeKH();
 
                 return Ok(entity);
             }
@@ -70,6 +89,11 @@ namespace Backend_DV_YTe.Controllers
             try
             {
                 byte[] userIdBytes = await _distributedCache.GetAsync("UserId");// Lấy giá trị UserId từ Distributed Cache
+                if (userIdBytes == null || userIdBytes.Length != sizeof(int))
+                {
+                    throw new Exception(message: "Vui lòng đăng nhập!");
+                }
+
                 int userId = BitConverter.ToInt32(userIdBytes, 0);
 
                 var mapEntity = _mapper.Map<CTMuaThietBiYTeEntity>(model);
@@ -103,7 +127,7 @@ namespace Backend_DV_YTe.Controllers
                 return Ok(new BaseResponseModel<string>(
                     statusCode: StatusCodes.Status200OK,
                     code: "Success!",
-                    data: "Chi tiết nhập vaccine updated successfully!"));
+                    data: "Updated successfully!"));
             }
             catch (Exception ex)
             {

@@ -44,7 +44,7 @@ namespace Backend_DV_YTe.Controllers
         }
         [HttpGet]
         [Route("/api/[controller]/get-all-ct-mua-thuoc")]
-        public async Task<ActionResult<IEnumerable<CTMuaThuocEntity>>> GetAllCTMuaThuoc()
+        public async Task<ActionResult<ICollection<CTMuaThuocEntity>>> GetAllCTMuaThuoc()
         {
             try
             {
@@ -62,7 +62,25 @@ namespace Backend_DV_YTe.Controllers
             }
         }
 
+        [HttpGet]
+        [Route("/api/[controller]/get-all-ct-mua-thuoc-khach-hang")]
+        public async Task<ActionResult<ICollection<CTMuaThuocEntity>>> GetAllCTMuaThuocKH()
+        {
+            try
+            {
+                var entity = await _CTMuaThuocRepository.GetAllCTMuaThuocKH();
 
+                return Ok(entity);
+            }
+            catch (Exception ex)
+            {
+                dynamic result = new BaseResponseModel<string>(
+                   statusCode: StatusCodes.Status500InternalServerError,
+                   code: "Failed!",
+                   message: ex.Message);
+                return BadRequest(result);
+            }
+        }
 
         [HttpPost]
         [Route("/api/[controller]/create-ct-mua-thuoc")]

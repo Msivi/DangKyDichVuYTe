@@ -7,6 +7,7 @@ namespace Backend_DV_YTe.Entity
     {
         public string? diaDiem { get; set; }
         public string? trangThai { get; set; }
+        public string? ghiChu { get; set; }
         public DateTime thoiGianDuKien { get; set; }
 
         public virtual ICollection<KetQuaDichVuEntity> KetQuaDichVu { get; set; }

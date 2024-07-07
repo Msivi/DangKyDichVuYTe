@@ -30,13 +30,16 @@ namespace Backend_DV_YTe.Repository
         public async Task<ICollection<KhachHangEntity>> GetAllKhachHang()   
         {
             var entities = await _context.khachHangEntities
+                .Where(c => c.DeletedTime == null)
                 .ToListAsync();
 
             return entities;
         }
         public async Task<ICollection<KhachHangEntity>> SearchKhachHang(string searchKey)
         {
-            var ListKH = await _context.khachHangEntities.ToListAsync();
+            var ListKH = await _context.khachHangEntities
+                .Where(c=>c.DeletedTime==null)
+                .ToListAsync();
 
             // Filter the list and materialize the results
             var filteredList = ListKH.Where(c => (
@@ -50,7 +53,7 @@ namespace Backend_DV_YTe.Repository
         }
         public async Task<KhachHangEntity> GetKhachHangById(int id)
         {
-            var entity = await _context.khachHangEntities.FirstOrDefaultAsync(e => e.maKhachHang == id );
+            var entity = await _context.khachHangEntities.FirstOrDefaultAsync(e => e.maKhachHang == id && e.DeletedTime == null) ;
              
             return entity;
         }
@@ -59,7 +62,7 @@ namespace Backend_DV_YTe.Repository
         {
             byte[] userIdBytes = await _distributedCache.GetAsync("UserId");// Lấy giá trị UserId từ Distributed Cache
             int userId = BitConverter.ToInt32(userIdBytes, 0);
-            var entity = await _context.khachHangEntities.FirstOrDefaultAsync(e => e.maKhachHang == userId);
+            var entity = await _context.khachHangEntities.FirstOrDefaultAsync(e => e.maKhachHang == userId && e.DeletedTime==null);
 
             return entity;
         }
@@ -103,6 +106,38 @@ namespace Backend_DV_YTe.Repository
             catch (Exception ex)
             {
                 throw; // Không cần throw ex; vì sẽ mất thông tin gốc về exception
+            }
+        }
+        public async Task<KhachHangEntity> DeleteKhachHang(int id, bool isPhysical)
+        {
+            try
+            {
+                var entity = await _context.khachHangEntities.FirstOrDefaultAsync(e => e.maKhachHang == id && e.DeletedTime == null);
+                if (entity == null)
+                {
+                    throw new Exception("Không tìm thấy khách hàng!");
+                }
+                else
+                {
+                    if (isPhysical)
+                    {
+                        _context.khachHangEntities.Remove(entity);
+                    }
+                    else
+                    {
+                        entity.DeletedTime = DateTimeOffset.Now;
+                        _context.khachHangEntities.Update(entity);
+                    }
+
+                    await _context.SaveChangesAsync();
+
+                }
+                return entity;
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
             }
         }
 

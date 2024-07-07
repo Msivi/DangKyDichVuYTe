@@ -10,7 +10,8 @@ namespace Backend_DV_YTe.Repository.Interface
         Task<NhanVienEntity> GetTTNhanVien();
         Task<ICollection<NhanVienEntity>> SearchNhanVien(string searchKey);
 
-        Task UpdateNhanVien(NhanVienModel entity);
+        Task UpdateNhanVien(updateNhanVienModel entity);
         Task UpdateAvatar(string avatarUrl);
+        Task<NhanVienEntity> DeleteNhaVien(int id, bool isPhysical);
     }
 }

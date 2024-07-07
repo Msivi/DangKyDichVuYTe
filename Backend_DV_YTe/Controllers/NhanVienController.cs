@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Backend_DV_YTe.Entity;
 using Backend_DV_YTe.Model;
+using Backend_DV_YTe.Repository;
 using Backend_DV_YTe.Repository.Interface;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -46,7 +47,7 @@ namespace Backend_DV_YTe.Controllers
                 return BadRequest(result);
             }
         }
-        [Authorize(Roles = "QuanLy")]
+        //[Authorize(Roles = "QuanLy")]
         [HttpGet]
         [Route("/api/[controller]/get-all-nhan-vien")]
         public async Task<ActionResult<IEnumerable<NhanVienEntity>>> GetAllNhanVien()
@@ -66,7 +67,7 @@ namespace Backend_DV_YTe.Controllers
                 return BadRequest(result);
             }
         }
-        [Authorize(Roles = "QuanLy")]
+        //[Authorize(Roles = "QuanLy")]
         [HttpGet]
         [Route("/api/[controller]/search-nhan-vien")]
         public async Task<ActionResult<IEnumerable<NhanVienEntity>>> SearchNhanVien(string searchKey)
@@ -115,6 +116,11 @@ namespace Backend_DV_YTe.Controllers
             try
             {
                 byte[] userIdBytes = await _distributedCache.GetAsync("UserId");// Lấy giá trị UserId từ Distributed Cache
+                if (userIdBytes == null || userIdBytes.Length != sizeof(int))
+                {
+                    throw new Exception(message: "Vui lòng đăng nhập!");
+                }
+
                 int userId = BitConverter.ToInt32(userIdBytes, 0);
 
 
@@ -166,6 +172,61 @@ namespace Backend_DV_YTe.Controllers
             catch (Exception ex)
             {
                 return BadRequest(new { message = "Lỗi khi cập nhật đường dẫn ảnh đại diện: " + ex.Message });
+            }
+        }
+        [HttpPut]
+        [Route("/api/[controller]/update-nhan-vien")]
+        public async Task<ActionResult> UpdateNhanVien(updateNhanVienModel entity)
+        {
+            try
+            {
+
+                byte[] userIdBytes = await _distributedCache.GetAsync("UserId");// Lấy giá trị UserId từ Distributed Cache
+                if (userIdBytes == null || userIdBytes.Length != sizeof(int))
+                {
+                    throw new Exception(message: "Vui lòng đăng nhập!");
+                }
+
+                int userId = BitConverter.ToInt32(userIdBytes, 0);
+                
+               
+                await _nhanVienRepository.UpdateNhanVien(entity);
+
+                return Ok(new BaseResponseModel<string>(
+                    statusCode: StatusCodes.Status200OK,
+                    code: "Success!",
+                    data: "Updated successfully!"));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new BaseResponseModel<string>(
+                    statusCode: StatusCodes.Status400BadRequest,
+                    code: "Error",
+                    message: ex.Message));
+            }
+        }
+
+        [HttpDelete]
+        [Route("/api/[controller]/delete-nhan-vien")]
+        public async Task<ActionResult<NhanVienEntity>> DeleteNhanVien(int keyId)
+        {
+
+            try
+            {
+
+                await _nhanVienRepository.DeleteNhaVien(keyId, false);
+                return Ok(new BaseResponseModel<string>(
+                    statusCode: StatusCodes.Status200OK,
+                    code: "Success!",
+                    data: "Delete successfully!"));
+            }
+            catch (Exception ex)
+            {
+
+                return BadRequest(new BaseResponseModel<string>(
+                    statusCode: StatusCodes.Status400BadRequest,
+                    code: "Error",
+                    message: ex.Message));
             }
         }
     }

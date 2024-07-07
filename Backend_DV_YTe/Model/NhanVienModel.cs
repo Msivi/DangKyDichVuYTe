@@ -7,6 +7,7 @@ namespace Backend_DV_YTe.Model
         public string tenNhanVien { get; set; }
         //public string? Avatar { get; set; }
         public string email { get; set; }
+        [MinLength(6, ErrorMessage = "Mật khẩu phải có ít nhất 6 ký tự")]
         public string matKhau { get; set; }
         [Required(ErrorMessage = "Phone number is required")]
         [RegularExpression("^(03|05|07|08|09)\\d{8}$", ErrorMessage = "Số điện thoại không hợp lệ!")]

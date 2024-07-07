@@ -6,6 +6,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using System.Text.Json.Serialization;
 using System.Text.Json;
+using MimeKit;
+using MailKit.Net.Smtp;
 
 namespace Backend_DV_YTe.Repository
 {
@@ -20,33 +22,107 @@ namespace Backend_DV_YTe.Repository
             _mapper = mapper;
             _distributedCache = distributedCache;
         }
+        //public async Task<string> CreateKetQuaDichVu(KetQuaDichVuEntity entity)
+        //{
+        //    var existingKetQuaDichVu = await _context.ketQuaDichVuEntities
+        //        .FirstOrDefaultAsync(c => c.Id == entity.Id && (c.DeletedTime == null || c.DeletedTime != null));
+        //    if (existingKetQuaDichVu != null) // Kiểm tra null trước khi truy cập thuộc tính
+        //    {
+        //        if (existingKetQuaDichVu.MaLichHen == entity.MaLichHen)
+        //        {
+        //            throw new Exception(message: "Dịch vụ này đã có kết quả rồi!");
+        //        }
+        //    }
+
+        //    var lichHen = await _context.lichHenEntities.FirstOrDefaultAsync(c => c.Id == entity.MaLichHen && c.DeletedTime == null);
+        //    if (lichHen is null)
+        //    {
+        //        throw new Exception(message: "Lich hen Id not found!");
+        //    }
+
+
+        //    lichHen.trangThai = "Đã khám";
+        //    await _context.SaveChangesAsync();
+
+        //    var mapEntity = _mapper.Map<KetQuaDichVuEntity>(entity);
+        //    //ket qua của khách hàng nào
+        //    mapEntity.CreateBy = lichHen.MaKhachHang;
+
+        //    await _context.ketQuaDichVuEntities.AddAsync(mapEntity);
+        //    await _context.SaveChangesAsync();
+
+        //    return mapEntity.Id.ToString();
+        //}
         public async Task<string> CreateKetQuaDichVu(KetQuaDichVuEntity entity)
         {
             var existingKetQuaDichVu = await _context.ketQuaDichVuEntities
                 .FirstOrDefaultAsync(c => c.Id == entity.Id && (c.DeletedTime == null || c.DeletedTime != null));
-
             if (existingKetQuaDichVu != null)
             {
-                throw new Exception(message: "Id already exists!");
+                if (existingKetQuaDichVu.MaLichHen == entity.MaLichHen)
+                {
+                    throw new Exception("Dịch vụ này đã có kết quả rồi!");
+                }
             }
 
-            var lichHen = await _context.lichHenEntities.FirstOrDefaultAsync(c => c.Id == entity.MaLichHen && c.DeletedTime == null);
+            var lichHen = await _context.lichHenEntities
+                .Include(lh => lh.DichVu)
+                .Include(lh => lh.KhachHang)
+                .FirstOrDefaultAsync(c => c.Id == entity.MaLichHen && c.DeletedTime == null);
+
             if (lichHen is null)
             {
-                throw new Exception(message: "Lich hen Id not found!");
+                throw new Exception("Lịch hẹn Id not found!");
             }
 
             lichHen.trangThai = "Đã khám";
             await _context.SaveChangesAsync();
 
             var mapEntity = _mapper.Map<KetQuaDichVuEntity>(entity);
-            //ket qua của khách hàng nào
             mapEntity.CreateBy = lichHen.MaKhachHang;
 
             await _context.ketQuaDichVuEntities.AddAsync(mapEntity);
             await _context.SaveChangesAsync();
 
+            // Gửi email thông báo cho khách hàng
+            var khachHang = lichHen.KhachHang;
+            if (khachHang != null)
+            {
+                var emailBody = $"Kết quả dịch vụ của bạn đã được tạo:\n\n" +
+                                $"Tên dịch vụ: {lichHen.DichVu.tenDichVu}\n" +
+                                $"Mô tả kết quả: {entity.moTa}\n" +
+                                $"Địa điểm: {lichHen.diaDiem}\n" +
+                                $"Thời gian: {lichHen.thoiGianDuKien}\n";
+                                 
+
+                await SendEmailAsync(khachHang.email, "Kết quả dịch vụ", emailBody);
+            }
+
             return mapEntity.Id.ToString();
+        }
+
+        public async Task SendEmailAsync(string email, string subject, string message)
+        {
+            var emailMessage = new MimeMessage();
+            emailMessage.From.Add(new MailboxAddress("Your Name", "july6267@gmail.com"));
+            emailMessage.To.Add(new MailboxAddress("", email));
+            emailMessage.Subject = subject;
+            emailMessage.Body = new TextPart("plain") { Text = message };
+
+            using (var client = new SmtpClient())
+            {
+                try
+                {
+                    await client.ConnectAsync("smtp.gmail.com", 587, false);
+                    await client.AuthenticateAsync("july6267@gmail.com", "tape xhgh khov qusg");
+                    await client.SendAsync(emailMessage);
+                    await client.DisconnectAsync(true);
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception("Gửi email không thành công: " + ex.Message);
+                }
+            }
         }
 
 
@@ -106,25 +182,48 @@ namespace Backend_DV_YTe.Repository
 
         public async Task<ICollection<TTKetQuaDichVuKhachHangModel>> GetKetQuaDichVuByKhachHang()
         {
-            byte[] userIdBytes = await _distributedCache.GetAsync("UserId");// Lấy giá trị UserId từ Distributed Cache
+            byte[] userIdBytes = await _distributedCache.GetAsync("UserId"); 
             int userId = BitConverter.ToInt32(userIdBytes, 0);
 
             var result = await (from ketQua in _context.ketQuaDichVuEntities
                                 join lichHen in _context.lichHenEntities on ketQua.MaLichHen equals lichHen.Id
                                 join bacSi in _context.BacSiEntities on lichHen.MaBacSi equals bacSi.Id
                                 join dichVu in _context.dichVuEntities on lichHen.MaDichVu equals dichVu.Id
-                                where lichHen.MaKhachHang == userId
+                                join khachHang in _context.khachHangEntities on lichHen.MaKhachHang equals khachHang.maKhachHang
+                                where lichHen.MaKhachHang == userId && lichHen.DeletedTime==null && ketQua.DeletedTime==null
                                 select new TTKetQuaDichVuKhachHangModel
                                 {
                                     maKetQua=ketQua.Id.ToString(),
                                     moTa = ketQua.moTa,
                                     diaDiem = lichHen.diaDiem,
                                     tenBacSi = bacSi.tenBacSi,
-                                    tenDichVu = dichVu.tenDichVu
+                                    tenDichVu = dichVu.tenDichVu,
+                                    tenKhachHang=khachHang.tenKhachHang
                                 }).ToListAsync();
 
             return result;
         }
+
+        public async Task<ICollection<KetQuaDichVuEntity>> GetKetQuaDichVuByBacSi()
+        {
+            byte[] userIdBytes = await _distributedCache.GetAsync("UserId"); 
+            int userId = BitConverter.ToInt32(userIdBytes, 0);
+
+            var result = await (from lh in _context.lichHenEntities
+                                join kq in _context.ketQuaDichVuEntities
+                                on lh.Id equals kq.MaLichHen
+                                where lh.MaBacSi == userId && lh.DeletedTime==null && kq.DeletedTime==null
+                                select new KetQuaDichVuEntity
+                                {
+                                    Id = kq.Id,
+                                    moTa = kq.moTa,
+                                    MaLichHen=lh.Id
+                                   
+                                }).ToListAsync();
+
+            return result;
+        }
+
 
         public async Task<KetQuaDichVuEntity> GetKetQuaDichVuById(int id)
         {
@@ -177,6 +276,24 @@ namespace Backend_DV_YTe.Repository
 
             _context.ketQuaDichVuEntities.Update(existingKetQua);
             await _context.SaveChangesAsync();
+        }
+        public async Task<List<ThongKeDichVuModel>> GetAverageRatingsByServiceAsync(DateTime startDate, DateTime endDate)
+        {
+
+            var result = await _context.ketQuaDichVuEntities
+           .Where(kq => kq.LichHen.thoiGianDuKien >= startDate && kq.LichHen.thoiGianDuKien <= endDate)
+           .GroupBy(kq => new { kq.LichHen.DichVu.Id, kq.LichHen.DichVu.tenDichVu })
+           .Select(g => new ThongKeDichVuModel
+           {
+               MaDichVu = g.Key.Id,
+               TenDichVu = g.Key.tenDichVu,
+               SoSaoTrungBinh = g.SelectMany(kq => kq.DanhGia)
+                                 .Where(dg => dg.trangThai == "1")
+                                 .Average(dg => dg.soSaoDanhGia)
+           })
+           .ToListAsync();
+
+            return result;
         }
     }
 }

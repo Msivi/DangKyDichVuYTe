@@ -32,7 +32,7 @@ namespace Backend_DV_YTe.Libraries
             var vnpResponseCode = vnPay.GetResponseData("vnp_ResponseCode");
             var vnpSecureHash = collection.FirstOrDefault(k => k.Key == "vnp_SecureHash").Value; //hash của dữ liệu trả về
             var orderInfo = vnPay.GetResponseData("vnp_OrderInfo");
-
+            
             var checkSignature = vnPay.ValidateSignature(vnpSecureHash, hashSecret); //check Signature
 
             bool success = checkSignature && vnpResponseCode == "00"; // Kiểm tra chữ ký và mã phản hồi thành công
@@ -46,7 +46,8 @@ namespace Backend_DV_YTe.Libraries
                 PaymentId = vnPayTranId.ToString(),
                 TransactionId = vnPayTranId.ToString(),
                 Token = vnpSecureHash,
-                VnPayResponseCode = vnpResponseCode
+                VnPayResponseCode = vnpResponseCode,
+              
             };
         }
         public string GetIpAddress(HttpContext context)

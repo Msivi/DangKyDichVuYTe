@@ -13,6 +13,7 @@
         public string? thanhPhan { get; set; }
         public string tenDanhMuc { get; set; }
         public string? moTa { get; set; }
+        public string? hinhAnh { get; set; }
 
 
     }
