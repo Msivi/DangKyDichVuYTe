@@ -10,5 +10,6 @@ namespace Backend_DV_YTe.Repository.Interface
         Task<string> CreateCTMuaThuoc(CTMuaThuocEntity entity);
         Task UpdateCTMuaThuoc(int maHD, int maThuoc, CTMuaThuocModel entity);
         Task<CTMuaThuocEntity> DeleteCTMuaThuoc(int maHD, int maThuoc, bool isPhysical);
+        Task<ICollection<CTMuaThuocEntity>> GetAllCTMuaThuocKH();
     }
 }

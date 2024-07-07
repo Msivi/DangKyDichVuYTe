@@ -46,7 +46,7 @@ namespace Backend_DV_YTe.Controllers
                 return BadRequest(result);
             }
         }
-        [Authorize(Roles = "QuanLy")]
+        //[Authorize(Roles = "QuanLy")]
         [HttpGet]
         [Route("/api/[controller]/get-all-nhan-vien")]
         public async Task<ActionResult<IEnumerable<NhanVienEntity>>> GetAllNhanVien()
@@ -66,7 +66,7 @@ namespace Backend_DV_YTe.Controllers
                 return BadRequest(result);
             }
         }
-        [Authorize(Roles = "QuanLy")]
+        //[Authorize(Roles = "QuanLy")]
         [HttpGet]
         [Route("/api/[controller]/search-nhan-vien")]
         public async Task<ActionResult<IEnumerable<NhanVienEntity>>> SearchNhanVien(string searchKey)
@@ -115,6 +115,11 @@ namespace Backend_DV_YTe.Controllers
             try
             {
                 byte[] userIdBytes = await _distributedCache.GetAsync("UserId");// Lấy giá trị UserId từ Distributed Cache
+                if (userIdBytes == null || userIdBytes.Length != sizeof(int))
+                {
+                    throw new Exception(message: "Vui lòng đăng nhập!");
+                }
+
                 int userId = BitConverter.ToInt32(userIdBytes, 0);
 
 

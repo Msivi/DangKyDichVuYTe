@@ -14,5 +14,7 @@ namespace Backend_DV_YTe.Repository.Interface
 
         //Task<ICollection<KetQuaDichVuEntity>> GetKetQuaDichVuByKhachHang();
         Task<ICollection<TTKetQuaDichVuKhachHangModel>> GetKetQuaDichVuByKhachHang();
+        Task<ICollection<KetQuaDichVuEntity>> GetKetQuaDichVuByBacSi();
+        Task<List<ThongKeDichVuModel>> GetAverageRatingsByServiceAsync(DateTime startDate, DateTime endDate);
     }
 }

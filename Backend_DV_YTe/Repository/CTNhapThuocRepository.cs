@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
 using Backend_DV_YTe.Entity;
+using Backend_DV_YTe.Model;
 using Backend_DV_YTe.Repository.Interface;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 
 namespace Backend_DV_YTe.Repository
 {
@@ -9,56 +11,141 @@ namespace Backend_DV_YTe.Repository
     {
         private readonly AppDbContext _context;
         private readonly IMapper _mapper;
-        public CTNhapThuocRepository(AppDbContext Context, IMapper mapper)
+        private readonly IDistributedCache _distributedCache;
+        public CTNhapThuocRepository(AppDbContext Context, IMapper mapper, IDistributedCache distributedCache)
         {
             _context = Context;
             _mapper = mapper;
-
+            _distributedCache = distributedCache;
         }
         public async Task<string> CreateCTNhapThuoc(CTNhapThuocEntity ctNhap)
         {
             var existingCTNhapThuoc = await _context.cTNhapThuocEntities
                 .FirstOrDefaultAsync(c => c.MaThuoc == ctNhap.MaThuoc && c.MaNhapThuoc == ctNhap.MaNhapThuoc && (c.DeletedTime == null || c.DeletedTime != null));
-            if (existingCTNhapThuoc != null)
-            {
-                existingCTNhapThuoc.soLuong += ctNhap.soLuong;
-                _context.cTNhapThuocEntities.Update(existingCTNhapThuoc);
 
-                var existingMaThuoc = await _context.thuocEntities
-                    .FirstOrDefaultAsync(c => c.Id == ctNhap.MaThuoc && c.DeletedTime == null);
-                if (existingMaThuoc != null)
-                {
-                    existingMaThuoc.soLuong += ctNhap.soLuong;
-                    _context.thuocEntities.Update(existingMaThuoc);
-                }
-            }
-            else
-            {
-                var existingMaThuoc = await _context.thuocEntities
-                    .FirstOrDefaultAsync(c => c.Id == ctNhap.MaThuoc && c.DeletedTime == null);
-                if (existingMaThuoc == null)
-                {
-                    throw new Exception(message: "Mã thuoc không tồn tại!");
-                }
+            //var phieuNhap = await _context.nhapThuocEntities.FirstOrDefaultAsync( c => c.Id==ctNhap.MaNhapThuoc && c.DeletedTime == null);
+            //if (existingCTNhapThuoc != null)
+            //{
+            //    existingCTNhapThuoc.soLuong += ctNhap.soLuong;
+            //    _context.cTNhapThuocEntities.Update(existingCTNhapThuoc);
 
-                var existingMaNhap = await _context.nhapThuocEntities
-                    .FirstOrDefaultAsync(c => c.Id == ctNhap.MaNhapThuoc && c.DeletedTime == null);
-                if (existingMaNhap == null)
-                {
-                    throw new Exception(message: "Mã nhập thuoc không tồn tại!");
-                }
+            //    var existingMaThuoc = await _context.thuocEntities
+            //        .FirstOrDefaultAsync(c => c.Id == ctNhap.MaThuoc && c.DeletedTime == null);
+            //    if (existingMaThuoc != null)
+            //    {
+            //        existingMaThuoc.soLuong += ctNhap.soLuong;
+            //        _context.thuocEntities.Update(existingMaThuoc);
+            //    }
+            //    phieuNhap.tongTien += ctNhap.soLuong * ctNhap.donGiaNhap;
+            //    _context.nhapThuocEntities.Update(phieuNhap);
+            //}
+            //else
+            //{
+            //    var existingMaThuoc = await _context.thuocEntities
+            //        .FirstOrDefaultAsync(c => c.Id == ctNhap.MaThuoc && c.DeletedTime == null);
+            //    if (existingMaThuoc == null)
+            //    {
+            //        throw new Exception(message: "Mã thuoc không tồn tại!");
+            //    }
 
-                existingMaThuoc.soLuong = (existingMaThuoc.soLuong != null ? existingMaThuoc.soLuong : 0) + ctNhap.soLuong;
-                _context.thuocEntities.Update(existingMaThuoc);
+            //    var existingMaNhap = await _context.nhapThuocEntities
+            //        .FirstOrDefaultAsync(c => c.Id == ctNhap.MaNhapThuoc && c.DeletedTime == null);
+            //    if (existingMaNhap == null)
+            //    {
+            //        throw new Exception(message: "Mã nhập thuoc không tồn tại!");
+            //    }
 
-                var mapctNhap = _mapper.Map<CTNhapThuocEntity>(ctNhap);
-                await _context.cTNhapThuocEntities.AddAsync(mapctNhap);
-            }
+            //    existingMaThuoc.soLuong = (existingMaThuoc.soLuong != null ? existingMaThuoc.soLuong : 0) + ctNhap.soLuong;
+            //    _context.thuocEntities.Update(existingMaThuoc);
 
-            await _context.SaveChangesAsync();
+            //    var mapctNhap = _mapper.Map<CTNhapThuocEntity>(ctNhap);
+            //    await _context.cTNhapThuocEntities.AddAsync(mapctNhap);
+
+            //    phieuNhap.tongTien += ctNhap.soLuong * ctNhap.donGiaNhap;
+            //     _context.nhapThuocEntities.Update(phieuNhap);
+            //}
+
+            //await _context.SaveChangesAsync();
 
             return $"{ctNhap.MaThuoc}-{ctNhap.MaNhapThuoc}";
         }
+        //thu nghiem
+        public async Task<string> AddNhapThuocAsync(NhapThuocDto nhapThuocDto)
+        {
+            byte[] userIdBytes = await _distributedCache.GetAsync("UserId");// Lấy giá trị UserId từ Distributed Cache
+            if (userIdBytes == null || userIdBytes.Length != sizeof(int))
+            {
+                throw new Exception("Vui lòng đăng nhập!");
+            }
+
+            int userId = BitConverter.ToInt32(userIdBytes, 0);
+            using (var transaction = await _context.Database.BeginTransactionAsync())
+            {
+                try
+                {
+                    var nhapThuoc = new NhapThuocEntity
+                    {
+                        ngayTao = DateTime.Now,
+                        MaNhanVien = userId,
+                        MaNhaCungCap = nhapThuocDto.MaNhaCungCap,
+                        //tongTien = nhapThuocDto.tongTien,
+                        CTNhapThuoc = new List<CTNhapThuocEntity>()
+                    };
+                    double tongTien = 0;
+                    var tenNCC = await _context.nhaCungCapEntities
+                    .Where(c => c.Id == nhapThuoc.MaNhaCungCap && c.DeletedTime == null)
+                    .Select(c => c.tenNhaCungCap)
+                    .FirstOrDefaultAsync();
+                    foreach (var item in nhapThuocDto.ChiTietNhapThuoc)
+                    {
+                        var loThuoc = new LoThuocEntity
+                        {
+                            ngaySanXuat = item.ngaySanXuat,
+                            ngayHetHan = item.ngayHetHan,
+                            soLuong = item.soLuong,
+                            nhaCungCap = tenNCC,
+                            donGiaBan = item.donGiaBan,
+                            MaThuoc = item.MaThuoc,
+                            CreateBy=userId
+                        };
+
+                        _context.loThuocEntities.Add(loThuoc);
+                        await _context.SaveChangesAsync();
+
+                        var chiTietNhap = new CTNhapThuocEntity
+                        {
+                            MaThuoc = item.MaThuoc,
+                            MaNhapThuoc = nhapThuoc.Id,
+                            MaLoThuoc = loThuoc.Id,
+                            soLuong = item.soLuong,
+                            donGiaNhap = item.donGiaNhap,
+                            CreateBy=userId
+                        };
+
+                        nhapThuoc.CTNhapThuoc.Add(chiTietNhap);
+                        // Tính toán giá trị tongTien
+                        tongTien += item.soLuong * item.donGiaNhap;
+
+                        var thuoc = _context.thuocEntities.FirstOrDefault(c => c.Id == item.MaThuoc && c.DeletedTime==null);
+                        thuoc.donGia = item.donGiaBan;
+                        _context.thuocEntities.Update(thuoc);
+                    }
+                   
+
+                    nhapThuoc.tongTien = tongTien; // Gán giá trị tongTien vào trường tongTien của đối tượng nhapThuoc
+                    _context.nhapThuocEntities.Add(nhapThuoc);
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+                    return nhapThuoc.Id.ToString();
+                }
+                catch (Exception)
+                {
+                    await transaction.RollbackAsync();
+                    throw;
+                }
+            }
+        }
+
 
         public async Task<CTNhapThuocEntity> DeleteCTNhapThuoc(int maThuoc, int maNhapThuoc, bool isPhysical)
         {
@@ -172,60 +259,60 @@ namespace Backend_DV_YTe.Repository
         public async Task UpdateCTNhapThuoc(int maThuoc, int maNhapThuoc, CTNhapThuocEntity entity)
         {
 
-            if (entity == null)
-            {
-                throw new Exception(message: "Thông tin cập nhật rỗng!");
-            }
+            //if (entity == null)
+            //{
+            //    throw new Exception(message: "Thông tin cập nhật rỗng!");
+            //}
 
-            var existingCTNhapThuoc = await _context.cTNhapThuocEntities
-                .FirstOrDefaultAsync(c => c.MaThuoc== maThuoc && c.MaNhapThuoc == maNhapThuoc && c.DeletedTime == null);
+            //var existingCTNhapThuoc = await _context.cTNhapThuocEntities
+            //    .FirstOrDefaultAsync(c => c.MaThuoc== maThuoc && c.MaNhapThuoc == maNhapThuoc && c.DeletedTime == null);
 
-            if (existingCTNhapThuoc == null)
-            {
-                throw new Exception(message: "Không tìm thấy chi tiết nhập Thuoc!");
-            }
+            //if (existingCTNhapThuoc == null)
+            //{
+            //    throw new Exception(message: "Không tìm thấy chi tiết nhập Thuoc!");
+            //}
 
-            var existingMaThuoc = await _context.thuocEntities
-               .FirstOrDefaultAsync(c => c.Id == entity.MaThuoc&& c.DeletedTime == null);
-            if (existingMaThuoc == null)
-            {
-                throw new Exception(message: "Mã Vaccine không tồn tại!");
-            }
+            //var existingMaThuoc = await _context.thuocEntities
+            //   .FirstOrDefaultAsync(c => c.Id == entity.MaThuoc&& c.DeletedTime == null);
+            //if (existingMaThuoc == null)
+            //{
+            //    throw new Exception(message: "Mã Vaccine không tồn tại!");
+            //}
 
-            var existingMaNhap = await _context.nhapThuocEntities
-                .FirstOrDefaultAsync(c => c.Id == entity.MaNhapThuoc && c.DeletedTime == null);
-            if (existingMaNhap == null)
-            {
-                throw new Exception(message: "Mã nhập Thuoc không tồn tại!");
-            }
+            //var existingMaNhap = await _context.nhapThuocEntities
+            //    .FirstOrDefaultAsync(c => c.Id == entity.MaNhapThuoc && c.DeletedTime == null);
+            //if (existingMaNhap == null)
+            //{
+            //    throw new Exception(message: "Mã nhập Thuoc không tồn tại!");
+            //}
 
-            if (existingCTNhapThuoc.soLuong > entity.soLuong)
-            {
-                existingMaThuoc.soLuong = (existingMaThuoc.soLuong != null ? existingMaThuoc.soLuong : 0)
+            //if (existingCTNhapThuoc.soLuong > entity.soLuong)
+            //{
+            //    existingMaThuoc.soLuong = (existingMaThuoc.soLuong != null ? existingMaThuoc.soLuong : 0)
 
-                    - (existingCTNhapThuoc.soLuong - entity.soLuong);
-                if (existingMaThuoc.soLuong < 0)
-                {
-                    throw new Exception(message: "Số lượng trong kho không đủ để thực hiện cập nhật!");
-                }
-            }
-            else
-            {
-                if (existingMaThuoc.soLuong < (entity.soLuong - existingCTNhapThuoc.soLuong))
-                {
-                    throw new Exception(message: $"Số lượng hiện tại trong kho không đủ để thực hiện cập nhật này! Số lượng hiện tại kho đang là: {existingMaThuoc.soLuong}");
-                }
-                else
-                {
-                    existingMaThuoc.soLuong = (existingMaThuoc.soLuong != null ? existingMaThuoc.soLuong : 0)
+            //        - (existingCTNhapThuoc.soLuong - entity.soLuong);
+            //    if (existingMaThuoc.soLuong < 0)
+            //    {
+            //        throw new Exception(message: "Số lượng trong kho không đủ để thực hiện cập nhật!");
+            //    }
+            //}
+            //else
+            //{
+            //    if (existingMaThuoc.soLuong < (entity.soLuong - existingCTNhapThuoc.soLuong))
+            //    {
+            //        throw new Exception(message: $"Số lượng hiện tại trong kho không đủ để thực hiện cập nhật này! Số lượng hiện tại kho đang là: {existingMaThuoc.soLuong}");
+            //    }
+            //    else
+            //    {
+            //        existingMaThuoc.soLuong = (existingMaThuoc.soLuong != null ? existingMaThuoc.soLuong : 0)
 
-                        + (entity.soLuong - existingCTNhapThuoc.soLuong);
-                }
+            //            + (entity.soLuong - existingCTNhapThuoc.soLuong);
+            //    }
 
-            }
+            //}
 
-            _context.Entry(existingCTNhapThuoc).CurrentValues.SetValues(entity);
-            await _context.SaveChangesAsync();
+            //_context.Entry(existingCTNhapThuoc).CurrentValues.SetValues(entity);
+            //await _context.SaveChangesAsync();
         }
     }
 }

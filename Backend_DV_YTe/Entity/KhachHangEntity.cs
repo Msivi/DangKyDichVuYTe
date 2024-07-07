@@ -20,6 +20,6 @@ namespace Backend_DV_YTe.Entity
         public DateTime? NgaySinh { get; set; }
         public string? GioiTinh { get; set; }
         public virtual ICollection<LichHenEntity> LichHen { get; set; }
-
+        public virtual ICollection<DiaChiEntity> DiaChi { get; set; }
     }
 }

@@ -9,8 +9,8 @@ namespace Backend_DV_YTe.Model
         public string donViTinh { get; set; }
         public double donGia { get; set; }
        // public int? soLuong { get; set; }
-        public DateTime ngaySanXuat { get; set; }
-        public DateTime ngayHetHan { get; set; }
+        //public DateTime ngaySanXuat { get; set; }
+        //public DateTime ngayHetHan { get; set; }
         public string nhaSanXuat { get; set; }
         public int MaLoaiThuoc { get; set; }
         public string? thanhPhan { get; set; }

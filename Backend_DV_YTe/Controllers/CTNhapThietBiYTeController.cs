@@ -68,16 +68,21 @@ namespace Backend_DV_YTe.Controllers
 
         [HttpPost]
         [Route("/api/[controller]/create-ct-nhap-thiet-bi-y-te")]
-        public async Task<ActionResult<string>> CreateCTNhapThietBiYTe(CTNhapThietBiYTeModel model)
+        public async Task<ActionResult<string>> addCTNhapThietBiYTeAsync (NhapThietBiDto model)
         {
             try
             {
-                byte[] userIdBytes = await _distributedCache.GetAsync("UserId");// Lấy giá trị UserId từ Distributed Cache
-                int userId = BitConverter.ToInt32(userIdBytes, 0);
+                //byte[] userIdBytes = await _distributedCache.GetAsync("UserId");// Lấy giá trị UserId từ Distributed Cache
+                //if (userIdBytes == null || userIdBytes.Length != sizeof(int))
+                //{
+                //    throw new Exception(message: "Vui lòng đăng nhập!");
+                //}
 
-                var mapEntity = _mapper.Map<CTNhapThietBiYTeEntity>(model);
-                mapEntity.CreateBy = userId;
-                var result = await _cTNhapThietBiYTeRepository.CreateCTNhapThietBiYTe(mapEntity);
+                //int userId = BitConverter.ToInt32(userIdBytes, 0);
+
+                //var mapEntity = _mapper.Map<CTNhapThietBiYTeEntity>(model);
+                //mapEntity.CreateBy = userId;
+                var result = await _cTNhapThietBiYTeRepository.AddNhapThietBiAsync(model);
 
                 return Ok(new BaseResponseModel<string>(
                     statusCode: StatusCodes.Status201Created,

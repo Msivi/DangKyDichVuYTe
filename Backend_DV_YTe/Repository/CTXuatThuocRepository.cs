@@ -28,62 +28,62 @@ namespace Backend_DV_YTe.Repository
   
         public async Task<string> CreateCTXuatThuoc(CTXuatThuocEntity entity)
         {
-            var existingCTXuatThuoc = await _context.cTXuatThuocEntities
-                .FirstOrDefaultAsync(c => c.MaThuoc == entity.MaThuoc && c.MaXuatThuoc == entity.MaXuatThuoc);
-            var existingSLThuoc = await _context.thuocEntities
-                   .FirstOrDefaultAsync(c => c.Id == entity.MaThuoc && c.DeletedTime == null);
+            //var existingCTXuatThuoc = await _context.cTXuatThuocEntities
+            //    .FirstOrDefaultAsync(c => c.MaThuoc == entity.MaThuoc && c.MaXuatThuoc == entity.MaXuatThuoc);
+            //var existingSLThuoc = await _context.thuocEntities
+            //       .FirstOrDefaultAsync(c => c.Id == entity.MaThuoc && c.DeletedTime == null);
 
-            if (existingSLThuoc.soLuong < entity.soLuong)
-            {
-                throw new Exception($"Không đủ số lượng thiết bị để xuất! (Số lượng hiện tại trong kho: {existingSLThuoc.soLuong})");
-            }
+            //if (existingSLThuoc.soLuong < entity.soLuong)
+            //{
+            //    throw new Exception($"Không đủ số lượng thiết bị để xuất! (Số lượng hiện tại trong kho: {existingSLThuoc.soLuong})");
+            //}
 
-            if (existingCTXuatThuoc != null)
-            {
-                existingCTXuatThuoc.soLuong += entity.soLuong;
-                _context.cTXuatThuocEntities.Update(existingCTXuatThuoc);
+            //if (existingCTXuatThuoc != null)
+            //{
+            //    existingCTXuatThuoc.soLuong += entity.soLuong;
+            //    _context.cTXuatThuocEntities.Update(existingCTXuatThuoc);
 
-                var existingMaThietBi = await _context.thuocEntities
-                    .FirstOrDefaultAsync(c => c.Id == entity.MaThuoc && c.DeletedTime == null);
-                if (existingMaThietBi != null)
-                {
-                    existingMaThietBi.soLuong -= entity.soLuong;
-                    _context.thuocEntities.Update(existingMaThietBi);
-                }
-            }
-            else
-            {
-                var existingMaThietBi = await _context.thuocEntities
-                    .FirstOrDefaultAsync(c => c.Id == entity.MaThuoc && c.DeletedTime == null);
-                if (existingMaThietBi == null)
-                {
-                    throw new Exception(message: "Mã thuoc không tồn tại!");
-                }
+            //    var existingMaThietBi = await _context.thuocEntities
+            //        .FirstOrDefaultAsync(c => c.Id == entity.MaThuoc && c.DeletedTime == null);
+            //    if (existingMaThietBi != null)
+            //    {
+            //        existingMaThietBi.soLuong -= entity.soLuong;
+            //        _context.thuocEntities.Update(existingMaThietBi);
+            //    }
+            //}
+            //else
+            //{
+            //    var existingMaThietBi = await _context.thuocEntities
+            //        .FirstOrDefaultAsync(c => c.Id == entity.MaThuoc && c.DeletedTime == null);
+            //    if (existingMaThietBi == null)
+            //    {
+            //        throw new Exception(message: "Mã thuoc không tồn tại!");
+            //    }
 
-                var existingMaXuat = await _context.xuatThuocEntities
-                    .FirstOrDefaultAsync(c => c.Id == entity.MaXuatThuoc && c.DeletedTime == null);
-                if (existingMaXuat == null)
-                {
-                    throw new Exception(message: "Mã xuất thiết bị không tồn tại!");
-                }
+            //    var existingMaXuat = await _context.xuatThuocEntities
+            //        .FirstOrDefaultAsync(c => c.Id == entity.MaXuatThuoc && c.DeletedTime == null);
+            //    if (existingMaXuat == null)
+            //    {
+            //        throw new Exception(message: "Mã xuất thiết bị không tồn tại!");
+            //    }
 
-                //if (existingMaThietBi.soLuong < entity.soLuong)
-                //{
-                //    throw new Exception($"Không đủ số lượng thiết bị để xuất! (Số lượng hiện tại trong kho: {existingMaThietBi.soLuong})");
-                //}
+            //    //if (existingMaThietBi.soLuong < entity.soLuong)
+            //    //{
+            //    //    throw new Exception($"Không đủ số lượng thiết bị để xuất! (Số lượng hiện tại trong kho: {existingMaThietBi.soLuong})");
+            //    //}
 
 
-                existingMaThietBi.soLuong -= entity.soLuong;
-                _context.thuocEntities.Update(existingMaThietBi);
+            //    existingMaThietBi.soLuong -= entity.soLuong;
+            //    _context.thuocEntities.Update(existingMaThietBi);
 
-                // Thêm phiếu xuất vaccine mới
-                var mapEntity = _mapper.Map<CTXuatThuocEntity>(entity);
-                await _context.cTXuatThuocEntities.AddAsync(mapEntity);
-            }
+            //    // Thêm phiếu xuất vaccine mới
+            //    var mapEntity = _mapper.Map<CTXuatThuocEntity>(entity);
+            //    await _context.cTXuatThuocEntities.AddAsync(mapEntity);
+            //}
 
-            await _context.SaveChangesAsync();
-            danhSachXuatThuoc.Add(entity);
-            _cache.Set("danhSachXuatThuoc", danhSachXuatThuoc);
+            //await _context.SaveChangesAsync();
+            //danhSachXuatThuoc.Add(entity);
+            //_cache.Set("danhSachXuatThuoc", danhSachXuatThuoc);
 
             return $"{entity.MaXuatThuoc}-{entity.MaThuoc}";
         }
@@ -237,59 +237,59 @@ namespace Backend_DV_YTe.Repository
         public async Task UpdateCTXuatThuoc(int MaThuoc, int MaXuatThuoc, CTXuatThuocEntity entity)
         {
 
-            if (entity == null)
-            {
-                throw new Exception(message: "Thông tin cập nhật rỗng!");
-            }
+            //if (entity == null)
+            //{
+            //    throw new Exception(message: "Thông tin cập nhật rỗng!");
+            //}
 
-            var existingCTXuatThuoc = await _context.cTXuatThuocEntities
-                .FirstOrDefaultAsync(e => e.MaThuoc == MaThuoc && e.MaXuatThuoc == MaXuatThuoc && e.DeletedTime == null);
-            if (existingCTXuatThuoc == null)
-            {
-                throw new Exception(message: "Không tìm thấy chi tiết xuất thuoc!");
-            }
+            //var existingCTXuatThuoc = await _context.cTXuatThuocEntities
+            //    .FirstOrDefaultAsync(e => e.MaThuoc == MaThuoc && e.MaXuatThuoc == MaXuatThuoc && e.DeletedTime == null);
+            //if (existingCTXuatThuoc == null)
+            //{
+            //    throw new Exception(message: "Không tìm thấy chi tiết xuất thuoc!");
+            //}
 
-            var existingMaThuoc = await _context.thuocEntities
-                .FirstOrDefaultAsync(c => c.Id == MaThuoc && c.DeletedTime == null);
+            //var existingMaThuoc = await _context.thuocEntities
+            //    .FirstOrDefaultAsync(c => c.Id == MaThuoc && c.DeletedTime == null);
               
-            if (existingMaThuoc == null)
-            {
-                throw new Exception(message: "Mã thuoc không tồn tại!");
-            }
+            //if (existingMaThuoc == null)
+            //{
+            //    throw new Exception(message: "Mã thuoc không tồn tại!");
+            //}
 
-            var existingMaXuat = await _context.xuatThuocEntities
-                .FirstOrDefaultAsync(c => c.Id == MaXuatThuoc && c.DeletedTime == null);
-            if (existingMaXuat == null)
-            {
-                throw new Exception(message: "Mã xuất thuoc không tồn tại!");
-            }
+            //var existingMaXuat = await _context.xuatThuocEntities
+            //    .FirstOrDefaultAsync(c => c.Id == MaXuatThuoc && c.DeletedTime == null);
+            //if (existingMaXuat == null)
+            //{
+            //    throw new Exception(message: "Mã xuất thuoc không tồn tại!");
+            //}
 
-            if (existingCTXuatThuoc.soLuong > entity.soLuong)
-            {
-                existingMaThuoc.soLuong = (existingMaThuoc.soLuong != null ? existingMaThuoc.soLuong : 0)
+            //if (existingCTXuatThuoc.soLuong > entity.soLuong)
+            //{
+            //    existingMaThuoc.soLuong = (existingMaThuoc.soLuong != null ? existingMaThuoc.soLuong : 0)
 
-                    + (existingCTXuatThuoc.soLuong - entity.soLuong);
+            //        + (existingCTXuatThuoc.soLuong - entity.soLuong);
 
-            }
-            else
-            {
-                if (existingMaThuoc.soLuong < (entity.soLuong - existingCTXuatThuoc.soLuong))
-                {
-                    throw new Exception(message: $"Số lượng hiện tại trong kho không đủ để thực hiện cập nhật này! Số lượng hiện tại kho đang là: {existingMaThuoc.soLuong}");
-                }
-                else
-                {
-                    existingMaThuoc.soLuong = (existingMaThuoc.soLuong != null ? existingMaThuoc.soLuong : 0)
+            //}
+            //else
+            //{
+            //    if (existingMaThuoc.soLuong < (entity.soLuong - existingCTXuatThuoc.soLuong))
+            //    {
+            //        throw new Exception(message: $"Số lượng hiện tại trong kho không đủ để thực hiện cập nhật này! Số lượng hiện tại kho đang là: {existingMaThuoc.soLuong}");
+            //    }
+            //    else
+            //    {
+            //        existingMaThuoc.soLuong = (existingMaThuoc.soLuong != null ? existingMaThuoc.soLuong : 0)
 
-                        - (entity.soLuong - existingCTXuatThuoc.soLuong);
-                }
+            //            - (entity.soLuong - existingCTXuatThuoc.soLuong);
+            //    }
 
-            }
+            //}
 
-            _context.thuocEntities.Update(existingMaThuoc);
+            //_context.thuocEntities.Update(existingMaThuoc);
 
-            _context.Entry(existingCTXuatThuoc).CurrentValues.SetValues(entity);
-            await _context.SaveChangesAsync();
+            //_context.Entry(existingCTXuatThuoc).CurrentValues.SetValues(entity);
+            //await _context.SaveChangesAsync();
         }
 
     }

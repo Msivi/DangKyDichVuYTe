@@ -31,6 +31,8 @@
                 c.AddProfile(new CTBacSiProfile());
                 c.AddProfile(new CTMuaThuocProfile());
                 c.AddProfile(new CTMuaThietBiYTeProfile());
+                c.AddProfile(new DiaChiProfile());
+                c.AddProfile(new LichLamViecProfile());
             });
             return services;
         }

@@ -6,6 +6,7 @@ namespace Backend_DV_YTe.Entity
     public class NhapThietBiYTeEntity:Entity
     {
         public DateTime ngayTao { get; set; }
+        public double tongTien { get; set; } = 0;  
 
         [ForeignKey("NhanVien")]
         public int MaNhanVien { get; set; }
@@ -16,5 +17,10 @@ namespace Backend_DV_YTe.Entity
         public virtual NhaCungCapEntity NhaCungCap { get; set; }
 
         public virtual ICollection<CTNhapThietBiYTeEntity> CTNhapThietBiYTe { get; set; }
+
+        public NhapThietBiYTeEntity()
+        {
+            tongTien = 0;
+        }
     }
 }

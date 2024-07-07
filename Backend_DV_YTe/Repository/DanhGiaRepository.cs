@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Identity.Client.Extensions.Msal;
+using System.Linq;
 
 namespace Backend_DV_YTe.Repository
 {
@@ -40,7 +41,7 @@ namespace Backend_DV_YTe.Repository
         //    return entity.Id.ToString();
         //}
 
-        public async Task<string> CreateDanhGia(DanhGiaEntity entity, IFormFile imageFile)
+        public async Task<string> CreateDanhGia(DanhGiaEntity entity, IFormFile? imageFile)
         {
             byte[] userIdBytes = await _distributedCache.GetAsync("UserId"); // Lấy giá trị UserId từ Distributed Cache
             int userId = BitConverter.ToInt32(userIdBytes, 0);
@@ -67,22 +68,34 @@ namespace Backend_DV_YTe.Repository
             var ktTonTai = danhSach.Any(dk => dk.Id == entity.MaKetQuaDichVu);
 
 
-
-
             if (!ktTonTai)
             {
                 throw new Exception(message: "Mã đánh giá không hợp lệ!");
             }
-
-            var uniqueFileName = Path.GetRandomFileName() + Path.GetExtension(imageFile.FileName);
-            var imagePath = Path.Combine(_webHostEnvironment.ContentRootPath, "Images", uniqueFileName);
-
-            using (var fileStream = new FileStream(imagePath, FileMode.Create))
+            // Kiểm tra loại tệp ảnh
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
+            var fileExtension = Path.GetExtension(imageFile.FileName).ToLowerInvariant();
+            if (!allowedExtensions.Contains(fileExtension))
             {
-                await imageFile.CopyToAsync(fileStream);
+                throw new Exception(message:"Loại tệp ảnh không được hỗ trợ. Vui lòng chọn tệp ảnh có định dạng JPG, JPEG, PNG, hoặc GIF.");
             }
+            if (imageFile != null)
+            {
+                var uniqueFileName = Path.GetRandomFileName() + Path.GetExtension(imageFile.FileName);
+                var imagePath = Path.Combine(_webHostEnvironment.ContentRootPath, "Images", uniqueFileName);
 
-            entity.hinhAnh = $"/Images/" + uniqueFileName;
+                using (var fileStream = new FileStream(imagePath, FileMode.Create))
+                {
+                    await imageFile.CopyToAsync(fileStream);
+                }
+
+                entity.hinhAnh = $"/Images/{uniqueFileName}";
+            }
+            else
+            {
+                entity.hinhAnh = null;
+            }    
+             
 
             _context.danhGiaEntities.Add(entity);
             await _context.SaveChangesAsync();
@@ -276,7 +289,7 @@ namespace Backend_DV_YTe.Repository
                     lichHen => lichHen.Id,
                     (d, lichHen) => new { DanhGia = d.DanhGia, KetQuaDichVu = d.KetQuaDichVu, LichHen = lichHen }
                 )
-                .Where(d => d.LichHen.DichVu.Id == maDichVu)
+                .Where(d => d.LichHen.DichVu.Id == maDichVu && d.DanhGia.trangThai== "1")
                 .Select(d => new { MaDichVu = d.LichHen.DichVu.Id, SoSaoDanhGia = d.DanhGia.soSaoDanhGia })
                 .ToListAsync();
 
@@ -302,12 +315,35 @@ namespace Backend_DV_YTe.Repository
                     lichHen => lichHen.Id,
                     (d, lichHen) => new { DanhGia = d.DanhGia, KetQuaDichVu = d.KetQuaDichVu, LichHen = lichHen }
                 )
-                .Where(d => d.LichHen.DichVu.Id == maDichVu)
+                .Where(d => d.LichHen.DichVu.Id == maDichVu && d.DanhGia.trangThai=="1")
                 .Select(d => d.DanhGia)
                 .ToListAsync();
 
             return danhGiaList;
         }
+
+        public async Task<Dictionary<int, (string DoctorName, double AverageRating)>> GetAverageRatingPerDoctorWithNames()
+        {
+            var doctorRatings = await (
+                from lh in _context.lichHenEntities
+                join bs in _context.BacSiEntities on lh.MaBacSi equals bs.Id
+                join kqdv in _context.ketQuaDichVuEntities on lh.Id equals kqdv.MaLichHen
+                join dg in _context.danhGiaEntities on kqdv.Id equals dg.MaKetQuaDichVu
+                where dg.trangThai == "1"
+                group dg.soSaoDanhGia by new { lh.MaBacSi, bs.tenBacSi } into g
+                select new
+                {
+                    DoctorID = g.Key.MaBacSi,
+                    DoctorName = g.Key.tenBacSi,
+                    AverageRating = g.Average()
+                }
+            ).ToListAsync();
+
+            return doctorRatings.ToDictionary(x => x.DoctorID, x => (x.DoctorName, x.AverageRating));
+        }
+
+
+
     }
 }
 

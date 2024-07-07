@@ -2,9 +2,12 @@
 using Backend_DV_YTe.Entity;
 using Backend_DV_YTe.Model;
 using Backend_DV_YTe.Repository.Interface;
+using iTextSharp.text.pdf;
+using iTextSharp.text;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
+using ClosedXML.Excel;
 
 namespace Backend_DV_YTe.Repository
 {
@@ -29,6 +32,13 @@ namespace Backend_DV_YTe.Repository
             if (existingDichVu != null)
             {
                 throw new Exception(message: "Id is already exist!");
+            }
+            // Kiểm tra loại tệp ảnh
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
+            var fileExtension = Path.GetExtension(imageFile.FileName).ToLowerInvariant();
+            if (!allowedExtensions.Contains(fileExtension))
+            {
+                throw new Exception(message: "Loại tệp ảnh không được hỗ trợ. Vui lòng chọn tệp ảnh có định dạng JPG, JPEG, PNG, hoặc GIF.");
             }
 
             var uniqueFileName = Path.GetRandomFileName() + Path.GetExtension(imageFile.FileName);
@@ -189,7 +199,7 @@ namespace Backend_DV_YTe.Repository
             return filteredList;
         }
 
-        public async Task UpdateDichVu(int id, DichVuModel entity)
+        public async Task UpdateDichVu(int id, DichVuModel entity,IFormFile? imageFile)
         {
 
             if (entity == null)
@@ -207,14 +217,33 @@ namespace Backend_DV_YTe.Repository
             byte[] userIdBytes = await _distributedCache.GetAsync("UserId");// Lấy giá trị UserId từ Distributed Cache
             int userId = BitConverter.ToInt32(userIdBytes, 0);
 
+
+            if (imageFile != null)
+            {
+                var uniqueFileName = Path.GetRandomFileName() + Path.GetExtension(imageFile.FileName);
+                var imagePath = Path.Combine(_webHostEnvironment.ContentRootPath, "Images", uniqueFileName);
+
+                using (var fileStream = new FileStream(imagePath, FileMode.Create))
+                {
+                    await imageFile.CopyToAsync(fileStream);
+                }
+
+                existingDichVu.hinhAnh = $"/Images/" + uniqueFileName;
+            }
+            //else
+            //{
+            //    existingDichVu.hinhAnh = null;
+            //}
+
+
+
             existingDichVu.tenDichVu=entity.tenDichVu;
             existingDichVu.moTa= entity.moTa;
             existingDichVu.gia= entity.gia;
             existingDichVu.MaLoaiDichVu = entity.MaLoaiDichVu;
             existingDichVu.MaChuyenKhoa=entity.MaChuyenKhoa;
             existingDichVu.CreateBy = userId;
-            //var mapEntity = _mapper.Map<DichVuEntity>(entity);
-            //mapEntity.CreateBy = userId;
+           
 
             _context.dichVuEntities.Update(existingDichVu);
             await _context.SaveChangesAsync();
@@ -230,7 +259,7 @@ namespace Backend_DV_YTe.Repository
                                 lichHen => lichHen.MaDichVu, // Khóa ngoại trong bảng LichHen liên kết với DichVu
                                 (dichVu, lichHen) => new { DichVu = dichVu, LichHen = lichHen }
                             )
-                            .Where(x => x.LichHen.thoiGianDuKien >= fromDate && x.LichHen.thoiGianDuKien <= toDate)
+                            .Where(x => x.LichHen.thoiGianDuKien >= fromDate && x.LichHen.thoiGianDuKien <= toDate && x.DichVu.DeletedTime==null )
                             .Sum(x => x.DichVu.gia);
 
           
@@ -251,24 +280,122 @@ namespace Backend_DV_YTe.Repository
                                     lichHen => lichHen.MaDichVu, // Khóa ngoại trong bảng LichHen liên kết với DichVuEntities
                                     (dichVu, lichHen) => new { DichVu = dichVu, LichHen = lichHen }
                                 )
-                                .Where(d => d.LichHen.thoiGianDuKien >= fromDate && d.LichHen.thoiGianDuKien <= toDate)
+                                .Where(d => d.LichHen.thoiGianDuKien >= fromDate && d.LichHen.thoiGianDuKien <= toDate && d.LichHen.DeletedTime==null)
                                 .GroupBy(d => d.DichVu.tenDichVu)
                                 .Select(g => new DichVuSuDung { TenDichVu = g.Key, SoLuong =(int) g.Select(x => x.DichVu.gia).Sum() })
                                 .ToListAsync();
 
             return dichVuDaSuDung;
         }
+        public async Task<byte[]> ExportThongKeDichVuToExcel(DateTime fromDate, DateTime toDate)
+        {
+            double tongGiaTri = await thongKeTinhTongGiaTriDichVu(fromDate, toDate);
+            var dichVuSuDung = await TimDichVuDaSuDung(fromDate, toDate);
 
-        //public async Task<int> TimDichVuGiaTriThapNhat(DateTime fromDate, DateTime toDate)
-        //{
-        //    double maxGia = await _context.dichVuEntities
-        //         .Where(d => d.LichHen.Any(lh => lh.thoiGianDuKien >= fromDate && lh.thoiGianDuKien <= toDate))
-        //         .MinAsync(d => d.gia);
+            using (var workbook = new XLWorkbook())
+            {
+                var worksheet = workbook.Worksheets.Add("ThongKeDichVu");
+                worksheet.Cell(1, 1).Value = "Tên Dịch Vụ";
+                worksheet.Cell(1, 2).Value = "Số Lượng";
 
-        //    int count = await _context.dichVuEntities
-        //        .CountAsync(d => d.gia == maxGia && d.LichHen.Any(lh => lh.thoiGianDuKien >= fromDate && lh.thoiGianDuKien <= toDate));
+                int row = 2;
+                foreach (var item in dichVuSuDung)
+                {
+                    worksheet.Cell(row, 1).Value = item.TenDichVu;
+                    worksheet.Cell(row, 2).Value = item.SoLuong;
+                    row++;
+                }
 
-        //    return count;
-        //}
+                worksheet.Cell(row, 1).Value = "Tổng Giá Trị";
+                worksheet.Cell(row, 2).Value = tongGiaTri;
+
+                using (var stream = new MemoryStream())
+                {
+                    workbook.SaveAs(stream);
+                    return stream.ToArray();
+                }
+            }
+        }
+        public async Task<byte[]> DownloadPdfFile(int entity)
+        {
+            try
+            {
+                var danhSachXuatThuoc = _context.dichVuEntities
+                     .Include(t => t.LoaiDichVu)
+                    .Where(c => c.MaLoaiDichVu == entity && c.DeletedTime == null)
+                    .Select(t => new DichVuEntity
+                    {
+                        Id = t.Id,
+                        tenDichVu = t.tenDichVu,
+                        gia = t.gia,
+                        moTa=t.moTa,
+                        LoaiDichVu= new LoaiDichVuEntity { tenLoai=t.LoaiDichVu.tenLoai}
+
+                    })
+                    .ToList();
+
+                if (danhSachXuatThuoc is null || danhSachXuatThuoc.Count == 0)
+                {
+                    throw new Exception("Danh sách thuốc bị rỗng!");
+                }
+
+                using (var memoryStream = new MemoryStream())
+                {
+                    using (var document = new Document())
+                    {
+                        var writer = PdfWriter.GetInstance(document, memoryStream);
+                        document.Open();
+
+                        // Tạo bảng
+                        PdfPTable table = new PdfPTable(5); // 10 cột trong bảng
+                        float[] columnWidths = new float[] { 1f, 5f, 2f, 4f, 2.5f};
+                        table.SetWidths(columnWidths);
+
+                        // Thiết lập đường dẫn tuyệt đối đến file font
+                        string fontDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Fonts");
+                        string fontAbsolutePath = Path.Combine(fontDirectory, "arial.ttf");
+
+                        // Kiểm tra sự tồn tại của file font
+                        if (!File.Exists(fontAbsolutePath))
+                        {
+                            throw new FileNotFoundException("File font không tồn tại tại đường dẫn: " + fontAbsolutePath);
+                        }
+                        // Thiết lập font cho tiêu đề cột
+                        BaseFont baseFont = BaseFont.CreateFont(fontAbsolutePath, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+                        Font columnHeaderFont = new Font(baseFont, 12, Font.BOLD);
+                        Font columnHeaderFontnd = new Font(baseFont, 10,Font.NORMAL);
+                        // Thêm tiêu đề cột vào bảng
+                        table.AddCell(new PdfPCell(new Phrase("Mã", columnHeaderFont)));
+                        table.AddCell(new PdfPCell(new Phrase("Tên loai DV", columnHeaderFont)));
+                        table.AddCell(new PdfPCell(new Phrase("giá", columnHeaderFont)));
+                        table.AddCell(new PdfPCell(new Phrase("Mô tả", columnHeaderFont)));
+                        table.AddCell(new PdfPCell(new Phrase("Danh mục", columnHeaderFont)));
+                        
+
+
+                        // Sử dụng danh sách để tạo PDF
+                        foreach (var entity1 in danhSachXuatThuoc)
+                        {
+                            table.AddCell(new PdfPCell(new Phrase(entity1.Id.ToString(), columnHeaderFontnd)));
+                            table.AddCell(new PdfPCell(new Phrase(entity1.tenDichVu, columnHeaderFontnd)));
+                            table.AddCell(new PdfPCell(new Phrase(entity1.gia.ToString(), columnHeaderFontnd)));
+                            table.AddCell(new PdfPCell(new Phrase(entity1.moTa, columnHeaderFontnd)));
+                            table.AddCell(new PdfPCell(new Phrase(entity1.LoaiDichVu.tenLoai.ToString(), columnHeaderFontnd)));
+                            
+
+                        }
+
+                        // Thêm bảng vào tệp tin PDF
+                        document.Add(table);
+                    }
+
+                    return memoryStream.ToArray();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
     }
 }

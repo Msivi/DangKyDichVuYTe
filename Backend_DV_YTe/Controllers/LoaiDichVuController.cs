@@ -10,7 +10,7 @@ using System.Data;
 
 namespace Backend_DV_YTe.Controllers
 {
-    [Authorize(Roles = "QuanLy")]
+    //[Authorize(Roles = "QuanLy")]
     [Route("api/[controller]")]
     [ApiController]
     public class LoaiDichVuController : ControllerBase
@@ -94,8 +94,14 @@ namespace Backend_DV_YTe.Controllers
             try
             {
                 byte[] userIdBytes = await _distributedCache.GetAsync("UserId");// Lấy giá trị UserId từ Distributed Cache
+                if (userIdBytes == null || userIdBytes.Length != sizeof(int))
+                {
+                    throw new Exception(message: "Vui lòng đăng nhập!");
+                }
+
                 int userId = BitConverter.ToInt32(userIdBytes, 0);
 
+               
                 var mapEntity = _mapper.Map<LoaiDichVuEntity>(model);
                 mapEntity.CreateBy = userId;
                 var result = await _LoaiDichVuRepository.CreateLoaiDichVu(mapEntity);
@@ -123,6 +129,11 @@ namespace Backend_DV_YTe.Controllers
             {
 
                 byte[] userIdBytes = await _distributedCache.GetAsync("UserId");// Lấy giá trị UserId từ Distributed Cache
+                if (userIdBytes == null || userIdBytes.Length != sizeof(int))
+                {
+                    throw new Exception(message: "Vui lòng đăng nhập!");
+                }
+
                 int userId = BitConverter.ToInt32(userIdBytes, 0);
 
                 var mapEntity = _mapper.Map<LoaiDichVuEntity>(entity);

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+This file is used by the publish/package process of your Web project. You can customize the behavior of this process
+by editing this MSBuild file. In order to learn more about this please visit https://go.microsoft.com/fwlink/?LinkID=208121. 
+-->
+<Project>
+  <PropertyGroup>
+    <TimeStampOfAssociatedLegacyPublishXmlFile />
+    <EncryptedPassword>AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAAasQo9tc/3kKLlVp4uI9sKQAAAAACAAAAAAAQZgAAAAEAACAAAAAfjMWM51fRQ1A5vcAgZETZUihma8UeVPieR5CXdsjTuQAAAAAOgAAAAAIAACAAAADFgN6fFFVB+OXkZEEJo+52bUAC3GSosMD8OeTm3cTvPCAAAAA0HVLgZsmEvlFqVl3HSePs19jdMML9YHgmsyJCKoxMYUAAAAAv67Gc1pyfVnpM092NNXf8eKbGJfqcL7/TV5XIKbgnLavWk26pmi1+Lo7ICNSXO5Px4r4mMhmUe3FvZG+WH3/u</EncryptedPassword>
+    <History>False|2024-07-05T17:19:04.1793677Z;True|2024-07-06T00:08:42.9339418+07:00;True|2024-07-05T12:59:38.2671982+07:00;True|2024-07-05T12:57:19.6062928+07:00;True|2024-07-02T01:27:21.6963017+07:00;False|2024-07-02T01:22:47.9625517+07:00;True|2024-07-02T00:57:26.0026682+07:00;True|2024-07-02T00:54:35.4363490+07:00;True|2024-07-01T12:16:04.0649565+07:00;True|2024-07-01T12:11:52.5414457+07:00;True|2024-07-01T00:55:46.2190917+07:00;True|2024-06-30T00:37:55.3525906+07:00;True|2024-06-29T23:54:06.4391648+07:00;True|2024-06-29T22:28:06.7305488+07:00;True|2024-06-29T21:46:03.0940089+07:00;True|2024-06-29T16:39:40.2279786+07:00;True|2024-06-29T01:51:31.3479933+07:00;True|2024-06-29T00:34:21.3689806+07:00;True|2024-06-29T00:04:15.6282759+07:00;True|2024-06-28T22:19:41.9961307+07:00;True|2024-06-28T22:12:26.8899542+07:00;</History>
+    <LastFailureDetails />
+  </PropertyGroup>
+  <ItemGroup>
+    <DestinationConnectionStrings Include="DefaultConnection">
+      <Value>server=SQL8006.site4now.net%3bdatabase=db_aaa6f4_levi%3buid=db_aaa6f4_levi_admin%3bpwd=levi06022002%3bTrustServerCertificate=True</Value>
+    </DestinationConnectionStrings>
+  </ItemGroup>
+</Project>

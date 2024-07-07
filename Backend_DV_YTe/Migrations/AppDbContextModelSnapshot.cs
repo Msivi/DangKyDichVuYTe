@@ -39,11 +39,23 @@ namespace Backend_DV_YTe.Migrations
                     b.Property<DateTimeOffset?>("DeletedTime")
                         .HasColumnType("datetimeoffset");
 
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("bangCap")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("hinhAnh")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("matKhau")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("tenBacSi")
@@ -170,10 +182,19 @@ namespace Backend_DV_YTe.Migrations
                     b.Property<DateTimeOffset?>("DeletedTime")
                         .HasColumnType("datetimeoffset");
 
+                    b.Property<int?>("MaLoThietBi")
+                        .IsRequired()
+                        .HasColumnType("int");
+
+                    b.Property<double>("donGiaNhap")
+                        .HasColumnType("float");
+
                     b.Property<int>("soLuong")
                         .HasColumnType("int");
 
                     b.HasKey("MaNhapThietBiYTe", "MaThietBiYTe");
+
+                    b.HasIndex("MaLoThietBi");
 
                     b.HasIndex("MaThietBiYTe");
 
@@ -199,10 +220,23 @@ namespace Backend_DV_YTe.Migrations
                     b.Property<DateTimeOffset?>("DeletedTime")
                         .HasColumnType("datetimeoffset");
 
+                    b.Property<int?>("LoThuocEntityId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MaLoThuoc")
+                        .HasColumnType("int");
+
+                    b.Property<double>("donGiaNhap")
+                        .HasColumnType("float");
+
                     b.Property<int>("soLuong")
                         .HasColumnType("int");
 
                     b.HasKey("MaNhapThuoc", "MaThuoc");
+
+                    b.HasIndex("LoThuocEntityId");
+
+                    b.HasIndex("MaLoThuoc");
 
                     b.HasIndex("MaThuoc");
 
@@ -334,6 +368,40 @@ namespace Backend_DV_YTe.Migrations
                     b.ToTable("DanhGia");
                 });
 
+            modelBuilder.Entity("Backend_DV_YTe.Entity.DiaChiEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("CreateBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreateTimes")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTimeOffset?>("DeletedTime")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<bool>("IsDefault")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("KhachHangId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("tenDiaChi")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("KhachHangId");
+
+                    b.ToTable("DiaChi");
+                });
+
             modelBuilder.Entity("Backend_DV_YTe.Entity.DichVuEntity", b =>
                 {
                     b.Property<int>("Id")
@@ -400,6 +468,12 @@ namespace Backend_DV_YTe.Migrations
                     b.Property<int>("MaKhachHang")
                         .HasColumnType("int");
 
+                    b.Property<string>("diaChi")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ghiChu")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("ngayMua")
                         .HasColumnType("datetime2");
 
@@ -437,9 +511,6 @@ namespace Backend_DV_YTe.Migrations
                     b.Property<int>("MaLichHen")
                         .HasColumnType("int");
 
-                    b.Property<int>("MaNhanVien")
-                        .HasColumnType("int");
-
                     b.Property<string>("moTa")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -447,8 +518,6 @@ namespace Backend_DV_YTe.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("MaLichHen");
-
-                    b.HasIndex("MaNhanVien");
 
                     b.ToTable("KetQuaDichVu");
                 });
@@ -528,6 +597,9 @@ namespace Backend_DV_YTe.Migrations
                     b.Property<string>("diaDiem")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("ghiChu")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("thoiGianDuKien")
                         .HasColumnType("datetime2");
 
@@ -543,6 +615,133 @@ namespace Backend_DV_YTe.Migrations
                     b.HasIndex("MaKhachHang");
 
                     b.ToTable("LichHen");
+                });
+
+            modelBuilder.Entity("Backend_DV_YTe.Entity.LichLamViecEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("CreateBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreateTimes")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTimeOffset?>("DeletedTime")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTime>("GioBatDau")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("GioKetThuc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("MaBacSi")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("Ngay")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MaBacSi");
+
+                    b.ToTable("LichLamViec");
+                });
+
+            modelBuilder.Entity("Backend_DV_YTe.Entity.LoThietBiYTeEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("CreateBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreateTimes")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTimeOffset?>("DeletedTime")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int?>("MaThietbiYTe")
+                        .HasColumnType("int");
+
+                    b.Property<double>("donGiaBan")
+                        .HasColumnType("float");
+
+                    b.Property<DateTime>("ngayHetHan")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ngaySanXuat")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("nhaCungCap")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("soLuong")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MaThietbiYTe");
+
+                    b.ToTable("LoThietBiYTe");
+                });
+
+            modelBuilder.Entity("Backend_DV_YTe.Entity.LoThuocEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("CreateBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreateTimes")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTimeOffset?>("DeletedTime")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("MaThuoc")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ThietBiYTeEntityId")
+                        .HasColumnType("int");
+
+                    b.Property<double>("donGiaBan")
+                        .HasColumnType("float");
+
+                    b.Property<DateTime>("ngayHetHan")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ngaySanXuat")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("nhaCungCap")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("soLuong")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MaThuoc");
+
+                    b.HasIndex("ThietBiYTeEntityId");
+
+                    b.ToTable("LoThuoc");
                 });
 
             modelBuilder.Entity("Backend_DV_YTe.Entity.LoaiDichVuEntity", b =>
@@ -732,6 +931,9 @@ namespace Backend_DV_YTe.Migrations
                     b.Property<DateTime>("ngayTao")
                         .HasColumnType("datetime2");
 
+                    b.Property<double>("tongTien")
+                        .HasColumnType("float");
+
                     b.HasKey("Id");
 
                     b.HasIndex("MaNhaCungCap");
@@ -766,6 +968,9 @@ namespace Backend_DV_YTe.Migrations
 
                     b.Property<DateTime>("ngayTao")
                         .HasColumnType("datetime2");
+
+                    b.Property<double>("tongTien")
+                        .HasColumnType("float");
 
                     b.HasKey("Id");
 
@@ -812,7 +1017,8 @@ namespace Backend_DV_YTe.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("MaLichHen");
+                    b.HasIndex("MaLichHen")
+                        .IsUnique();
 
                     b.ToTable("ThanhToanDV");
                 });
@@ -840,21 +1046,15 @@ namespace Backend_DV_YTe.Migrations
                     b.Property<double>("donGia")
                         .HasColumnType("float");
 
-                    b.Property<string>("moTa")
+                    b.Property<string>("hinhAnh")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("ngayHetHan")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("ngaySanXuat")
-                        .HasColumnType("datetime2");
+                    b.Property<string>("moTa")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("nhaSanXuat")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("soLuong")
-                        .HasColumnType("int");
 
                     b.Property<string>("tenThietBi")
                         .IsRequired()
@@ -894,21 +1094,15 @@ namespace Backend_DV_YTe.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("moTa")
+                    b.Property<string>("hinhAnh")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("ngayHetHan")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("ngaySanXuat")
-                        .HasColumnType("datetime2");
+                    b.Property<string>("moTa")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("nhaSanXuat")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("soLuong")
-                        .HasColumnType("int");
 
                     b.Property<string>("tenThuoc")
                         .IsRequired()
@@ -1033,17 +1227,25 @@ namespace Backend_DV_YTe.Migrations
 
             modelBuilder.Entity("Backend_DV_YTe.Entity.CTNhapThietBiYTeEntity", b =>
                 {
+                    b.HasOne("Backend_DV_YTe.Entity.LoThietBiYTeEntity", "LoThietBi")
+                        .WithMany("CTNhapThietBiYTe")
+                        .HasForeignKey("MaLoThietBi")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Backend_DV_YTe.Entity.NhapThietBiYTeEntity", "NhapThietBiYTe")
                         .WithMany("CTNhapThietBiYTe")
                         .HasForeignKey("MaNhapThietBiYTe")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Backend_DV_YTe.Entity.ThietBiYTeEntity", "ThietBiYTe")
                         .WithMany("CTNhapThietBiYTe")
                         .HasForeignKey("MaThietBiYTe")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("LoThietBi");
 
                     b.Navigation("NhapThietBiYTe");
 
@@ -1052,17 +1254,29 @@ namespace Backend_DV_YTe.Migrations
 
             modelBuilder.Entity("Backend_DV_YTe.Entity.CTNhapThuocEntity", b =>
                 {
+                    b.HasOne("Backend_DV_YTe.Entity.LoThuocEntity", null)
+                        .WithMany("CTNhapThuoc")
+                        .HasForeignKey("LoThuocEntityId");
+
+                    b.HasOne("Backend_DV_YTe.Entity.LoThuocEntity", "LoThuoc")
+                        .WithMany()
+                        .HasForeignKey("MaLoThuoc")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Backend_DV_YTe.Entity.NhapThuocEntity", "NhapThuoc")
                         .WithMany("CTNhapThuoc")
                         .HasForeignKey("MaNhapThuoc")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Backend_DV_YTe.Entity.ThuocEntity", "Thuoc")
                         .WithMany("CTNhapThuoc")
                         .HasForeignKey("MaThuoc")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("LoThuoc");
 
                     b.Navigation("NhapThuoc");
 
@@ -1118,6 +1332,17 @@ namespace Backend_DV_YTe.Migrations
                     b.Navigation("KetQuaDichVu");
                 });
 
+            modelBuilder.Entity("Backend_DV_YTe.Entity.DiaChiEntity", b =>
+                {
+                    b.HasOne("Backend_DV_YTe.Entity.KhachHangEntity", "KhachHang")
+                        .WithMany("DiaChi")
+                        .HasForeignKey("KhachHangId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("KhachHang");
+                });
+
             modelBuilder.Entity("Backend_DV_YTe.Entity.DichVuEntity", b =>
                 {
                     b.HasOne("Backend_DV_YTe.Entity.ChuyenKhoaEntity", "ChuyenKhoa")
@@ -1154,15 +1379,7 @@ namespace Backend_DV_YTe.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Backend_DV_YTe.Entity.NhanVienEntity", "NhanVien")
-                        .WithMany("KetQuaDV")
-                        .HasForeignKey("MaNhanVien")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("LichHen");
-
-                    b.Navigation("NhanVien");
                 });
 
             modelBuilder.Entity("Backend_DV_YTe.Entity.LichHenEntity", b =>
@@ -1190,6 +1407,41 @@ namespace Backend_DV_YTe.Migrations
                     b.Navigation("DichVu");
 
                     b.Navigation("KhachHang");
+                });
+
+            modelBuilder.Entity("Backend_DV_YTe.Entity.LichLamViecEntity", b =>
+                {
+                    b.HasOne("Backend_DV_YTe.Entity.BacSiEntity", "BacSi")
+                        .WithMany("LichLamViec")
+                        .HasForeignKey("MaBacSi")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("BacSi");
+                });
+
+            modelBuilder.Entity("Backend_DV_YTe.Entity.LoThietBiYTeEntity", b =>
+                {
+                    b.HasOne("Backend_DV_YTe.Entity.ThietBiYTeEntity", "ThietBiYTe")
+                        .WithMany()
+                        .HasForeignKey("MaThietbiYTe");
+
+                    b.Navigation("ThietBiYTe");
+                });
+
+            modelBuilder.Entity("Backend_DV_YTe.Entity.LoThuocEntity", b =>
+                {
+                    b.HasOne("Backend_DV_YTe.Entity.ThuocEntity", "Thuoc")
+                        .WithMany("LoThuoc")
+                        .HasForeignKey("MaThuoc")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Backend_DV_YTe.Entity.ThietBiYTeEntity", null)
+                        .WithMany("LoThuoc")
+                        .HasForeignKey("ThietBiYTeEntityId");
+
+                    b.Navigation("Thuoc");
                 });
 
             modelBuilder.Entity("Backend_DV_YTe.Entity.NhapThietBiYTeEntity", b =>
@@ -1268,6 +1520,8 @@ namespace Backend_DV_YTe.Migrations
                     b.Navigation("CTBacSi");
 
                     b.Navigation("LichHen");
+
+                    b.Navigation("LichLamViec");
                 });
 
             modelBuilder.Entity("Backend_DV_YTe.Entity.ChuyenKhoaEntity", b =>
@@ -1296,6 +1550,8 @@ namespace Backend_DV_YTe.Migrations
 
             modelBuilder.Entity("Backend_DV_YTe.Entity.KhachHangEntity", b =>
                 {
+                    b.Navigation("DiaChi");
+
                     b.Navigation("LichHen");
                 });
 
@@ -1304,6 +1560,16 @@ namespace Backend_DV_YTe.Migrations
                     b.Navigation("KetQuaDichVu");
 
                     b.Navigation("ThanhToanDV");
+                });
+
+            modelBuilder.Entity("Backend_DV_YTe.Entity.LoThietBiYTeEntity", b =>
+                {
+                    b.Navigation("CTNhapThietBiYTe");
+                });
+
+            modelBuilder.Entity("Backend_DV_YTe.Entity.LoThuocEntity", b =>
+                {
+                    b.Navigation("CTNhapThuoc");
                 });
 
             modelBuilder.Entity("Backend_DV_YTe.Entity.LoaiDichVuEntity", b =>
@@ -1330,8 +1596,6 @@ namespace Backend_DV_YTe.Migrations
 
             modelBuilder.Entity("Backend_DV_YTe.Entity.NhanVienEntity", b =>
                 {
-                    b.Navigation("KetQuaDV");
-
                     b.Navigation("NhapThietBiYTe");
 
                     b.Navigation("NhapThuoc");
@@ -1354,6 +1618,8 @@ namespace Backend_DV_YTe.Migrations
                     b.Navigation("CTNhapThietBiYTe");
 
                     b.Navigation("CTXuatThietBiYTe");
+
+                    b.Navigation("LoThuoc");
                 });
 
             modelBuilder.Entity("Backend_DV_YTe.Entity.ThuocEntity", b =>
@@ -1363,6 +1629,8 @@ namespace Backend_DV_YTe.Migrations
                     b.Navigation("CTNhapThuoc");
 
                     b.Navigation("CTXuatThuoc");
+
+                    b.Navigation("LoThuoc");
                 });
 
             modelBuilder.Entity("Backend_DV_YTe.Entity.XuatThietBiYTeEntity", b =>

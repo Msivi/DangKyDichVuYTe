@@ -24,10 +24,12 @@ namespace Backend_DV_YTe.Repository
         {
             var existingKetQuaDichVu = await _context.ketQuaDichVuEntities
                 .FirstOrDefaultAsync(c => c.Id == entity.Id && (c.DeletedTime == null || c.DeletedTime != null));
-
-            if (existingKetQuaDichVu != null)
+            if (existingKetQuaDichVu != null) // Kiểm tra null trước khi truy cập thuộc tính
             {
-                throw new Exception(message: "Id already exists!");
+                if (existingKetQuaDichVu.MaLichHen == entity.MaLichHen)
+                {
+                    throw new Exception(message: "Dịch vụ này đã có kết quả rồi!");
+                }
             }
 
             var lichHen = await _context.lichHenEntities.FirstOrDefaultAsync(c => c.Id == entity.MaLichHen && c.DeletedTime == null);
@@ -35,6 +37,7 @@ namespace Backend_DV_YTe.Repository
             {
                 throw new Exception(message: "Lich hen Id not found!");
             }
+           
 
             lichHen.trangThai = "Đã khám";
             await _context.SaveChangesAsync();
@@ -113,18 +116,40 @@ namespace Backend_DV_YTe.Repository
                                 join lichHen in _context.lichHenEntities on ketQua.MaLichHen equals lichHen.Id
                                 join bacSi in _context.BacSiEntities on lichHen.MaBacSi equals bacSi.Id
                                 join dichVu in _context.dichVuEntities on lichHen.MaDichVu equals dichVu.Id
-                                where lichHen.MaKhachHang == userId
+                                join khachHang in _context.khachHangEntities on lichHen.MaKhachHang equals khachHang.maKhachHang
+                                where lichHen.MaKhachHang == userId && lichHen.DeletedTime==null && ketQua.DeletedTime==null
                                 select new TTKetQuaDichVuKhachHangModel
                                 {
                                     maKetQua=ketQua.Id.ToString(),
                                     moTa = ketQua.moTa,
                                     diaDiem = lichHen.diaDiem,
                                     tenBacSi = bacSi.tenBacSi,
-                                    tenDichVu = dichVu.tenDichVu
+                                    tenDichVu = dichVu.tenDichVu,
+                                    tenKhachHang=khachHang.tenKhachHang
                                 }).ToListAsync();
 
             return result;
         }
+
+        public async Task<ICollection<KetQuaDichVuEntity>> GetKetQuaDichVuByBacSi()
+        {
+            byte[] userIdBytes = await _distributedCache.GetAsync("UserId");// Lấy giá trị UserId từ Distributed Cache
+            int userId = BitConverter.ToInt32(userIdBytes, 0);
+
+            var result = await (from lh in _context.lichHenEntities
+                                join kq in _context.ketQuaDichVuEntities
+                                on lh.Id equals kq.MaLichHen
+                                where lh.MaBacSi == userId && lh.DeletedTime==null && kq.DeletedTime==null
+                                select new KetQuaDichVuEntity
+                                {
+                                    Id = kq.Id,
+                                    moTa = kq.moTa,
+                                    MaLichHen=lh.Id
+                                }).ToListAsync();
+
+            return result;
+        }
+
 
         public async Task<KetQuaDichVuEntity> GetKetQuaDichVuById(int id)
         {
@@ -177,6 +202,24 @@ namespace Backend_DV_YTe.Repository
 
             _context.ketQuaDichVuEntities.Update(existingKetQua);
             await _context.SaveChangesAsync();
+        }
+        public async Task<List<ThongKeDichVuModel>> GetAverageRatingsByServiceAsync(DateTime startDate, DateTime endDate)
+        {
+
+            var result = await _context.ketQuaDichVuEntities
+           .Where(kq => kq.LichHen.thoiGianDuKien >= startDate && kq.LichHen.thoiGianDuKien <= endDate)
+           .GroupBy(kq => new { kq.LichHen.DichVu.Id, kq.LichHen.DichVu.tenDichVu })
+           .Select(g => new ThongKeDichVuModel
+           {
+               MaDichVu = g.Key.Id,
+               TenDichVu = g.Key.tenDichVu,
+               SoSaoTrungBinh = g.SelectMany(kq => kq.DanhGia)
+                                 .Where(dg => dg.trangThai == "1")
+                                 .Average(dg => dg.soSaoDanhGia)
+           })
+           .ToListAsync();
+
+            return result;
         }
     }
 }

@@ -66,7 +66,7 @@ namespace Backend_DV_YTe.Controllers
        // [Authorize(Roles = "KhachHang")]
         [HttpGet]
         [Route("/api/[controller]/get-all-ket-qua-dich-vu-khach-hang")]
-        public async Task<ActionResult<ICollection<KetQuaDichVuEntity>>> GetKetQuaDichVuKhachHang()
+        public async Task<ActionResult<ICollection<TTKetQuaDichVuKhachHangModel>>> GetKetQuaDichVuKhachHang()
         {
             try
             {
@@ -83,7 +83,25 @@ namespace Backend_DV_YTe.Controllers
                 return BadRequest(result);
             }
         }
+        [HttpGet]
+        [Route("/api/[controller]/get-all-ket-qua-dich-vu-bac-si")]
+        public async Task<ActionResult<ICollection<KetQuaDichVuEntity>>> GetKetQuaDichVuBacSi()
+        {
+            try
+            {
+                var entity = await _ketQuaDichVuRepository.GetKetQuaDichVuByBacSi();
 
+                return Ok(entity);
+            }
+            catch (Exception ex)
+            {
+                dynamic result = new BaseResponseModel<string>(
+                   statusCode: StatusCodes.Status500InternalServerError,
+                   code: "Failed!",
+                   message: ex.Message);
+                return BadRequest(result);
+            }
+        }
         //[HttpGet]
         //[Route("/api/[controller]/search-ket-qua-dich-vu")]
         //public async Task<ActionResult<ICollection<KetQuaDichVuEntity>>> SearchKetQuaDichVu(string searchKey)
@@ -106,7 +124,7 @@ namespace Backend_DV_YTe.Controllers
         //        return BadRequest(result);
         //    }
         //}
-        [Authorize(Roles = "NhanVien")]
+        //[Authorize(Roles = "NhanVien")]
         [HttpPost]
         [Route("/api/[controller]/create-ket-qua-dich-vu")]
         public async Task<ActionResult<string>> CreateKetQuaDichVu(KetQuaDichVuModel model)
@@ -114,10 +132,15 @@ namespace Backend_DV_YTe.Controllers
             try
             {
                 byte[] userIdBytes = await _distributedCache.GetAsync("UserId");// Lấy giá trị UserId từ Distributed Cache
+                if (userIdBytes == null || userIdBytes.Length != sizeof(int))
+                {
+                    throw new Exception(message: "Vui lòng đăng nhập!");
+                }
+
                 int userId = BitConverter.ToInt32(userIdBytes, 0);
 
                 var mapEntity = _mapper.Map<KetQuaDichVuEntity>(model);
-                mapEntity.MaNhanVien = userId;
+                mapEntity.CreateBy = userId;
                 var result = await _ketQuaDichVuRepository.CreateKetQuaDichVu(mapEntity);
 
                 return Ok(new BaseResponseModel<string>(
@@ -185,5 +208,24 @@ namespace Backend_DV_YTe.Controllers
                     message: ex.Message));
             }
         }
+        [HttpGet]
+        [Route("/api/[controller]/get-all-thong-ket-danh-gia-dich-vu")]
+        public async Task<ActionResult<List<ThongKeDichVuModel>>> GetAverageRatingsByService(DateTime startDate, DateTime endDate)
+        {
+            try
+            {
+                var result = await _ketQuaDichVuRepository.GetAverageRatingsByServiceAsync(startDate, endDate);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                dynamic result = new BaseResponseModel<string>(
+                   statusCode: StatusCodes.Status500InternalServerError,
+                   code: "Failed!",
+                   message: ex.Message);
+                return BadRequest(result);
+            }
+        }
+
     }
 }

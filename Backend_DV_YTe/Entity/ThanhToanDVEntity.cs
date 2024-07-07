@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Backend_DV_YTe.Entity
 {
@@ -9,8 +10,8 @@ namespace Backend_DV_YTe.Entity
         public DateTime ngayThanhToan { get; set; }
         public string phuongThucThanhToan { get; set; }
         public string trangThai { get; set; }
+        //public string? ghiChu { get; set; }
 
-        
 
         [ForeignKey("LichHen")]
         public int MaLichHen { get; set; }

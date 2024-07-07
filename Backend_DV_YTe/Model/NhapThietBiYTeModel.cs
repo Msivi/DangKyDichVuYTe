@@ -7,6 +7,7 @@ namespace Backend_DV_YTe.Model
     {
         public DateTime ngayTao { get; set; }
         public int MaNhaCungCap { get; set; }
-        
+         
+
     }
 }

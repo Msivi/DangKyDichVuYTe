@@ -8,6 +8,7 @@ namespace Backend_DV_YTe.Model
         public string tenKhachHang { get; set; }
         //public string? Avatar { get; set; }
         public string email { get; set; }
+        [MinLength(6, ErrorMessage = "Mật khẩu phải có ít nhất 6 ký tự")]
         public string matKhau { get; set; }
 
         [Required(ErrorMessage = "Phone number is required")]

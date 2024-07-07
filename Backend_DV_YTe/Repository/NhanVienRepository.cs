@@ -28,6 +28,7 @@ namespace Backend_DV_YTe.Repository
         public async Task<ICollection<NhanVienEntity>> GetAllNhanVien()
         {
             var entities = await _context.nhanVienEntities
+                .Where(c=>c.DeletedTime==null)
                 .ToListAsync();
 
             return entities;

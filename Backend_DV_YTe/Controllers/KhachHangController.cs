@@ -57,7 +57,7 @@ namespace Backend_DV_YTe.Controllers
                 return BadRequest(result);
             }
         }
-        [Authorize(Roles = "QuanLy")]
+        //[Authorize(Roles = "QuanLy")]
         [HttpGet]
         [Route("/api/[controller]/get-all-khach-hang")]
         public async Task<ActionResult<IEnumerable<KhachHangEntity>>> GetAllKhachHang()
@@ -98,7 +98,7 @@ namespace Backend_DV_YTe.Controllers
             }
         }
 
-        [Authorize(Roles = "QuanLy")]
+        //[Authorize(Roles = "QuanLy")]
         [HttpGet]
         [Route("/api/[controller]/search-khach-hang")]
         public async Task<ActionResult<IEnumerable<KhachHangEntity>>> SearchKhachHang(string searchKey)
@@ -130,6 +130,11 @@ namespace Backend_DV_YTe.Controllers
             try
             {
                 byte[] userIdBytes = await _distributedCache.GetAsync("UserId");// Lấy giá trị UserId từ Distributed Cache
+                if (userIdBytes == null || userIdBytes.Length != sizeof(int))
+                {
+                    throw new Exception(message: "Vui lòng đăng nhập!");
+                }
+
                 int userId = BitConverter.ToInt32(userIdBytes, 0);
 
 
@@ -156,8 +161,16 @@ namespace Backend_DV_YTe.Controllers
                     return BadRequest("Loại tệp ảnh không được hỗ trợ. Vui lòng chọn tệp ảnh có định dạng JPG, JPEG, PNG, hoặc GIF.");
                 }
 
-                var uniqueFileName = Path.GetRandomFileName() + Path.GetExtension(avatarFile.FileName);
-                var imagePath = Path.Combine(_webHostEnvironment.ContentRootPath, "Images", uniqueFileName);
+                var uniqueFileName = Path.GetRandomFileName() + fileExtension;
+                var imageDirectory = Path.Combine(_webHostEnvironment.ContentRootPath, "Images");
+
+                // Ensure the Images directory exists
+                if (!Directory.Exists(imageDirectory))
+                {
+                    Directory.CreateDirectory(imageDirectory);
+                }
+
+                var imagePath = Path.Combine(imageDirectory, uniqueFileName);
 
                 using (var fileStream = new FileStream(imagePath, FileMode.Create))
                 {
@@ -173,7 +186,7 @@ namespace Backend_DV_YTe.Controllers
                     }
                 }
 
-                user.Avatar = $"/Images/" + uniqueFileName;
+                user.Avatar = $"/Images/{uniqueFileName}";
                 await _khachHangRepository.UpdateAvatar(user.Avatar);
 
                 return Ok(new { message = "Đường dẫn ảnh đại diện đã được cập nhật." });
